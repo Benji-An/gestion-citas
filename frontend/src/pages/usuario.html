@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Profesionales - Health In The Pearl</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../index.css">
+    <style>
+        body {
+            background-color: #f5f5f7;
+        }
+        .card-professional {
+            transition: all 0.3s ease;
+        }
+        .card-professional:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .badge-specialty {
+            display: inline-block;
+            padding: 6px 16px;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="logo1 flex items-center">
+                   <img src="/frontend/public/logo2.png" alt="">
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="text-right">
+                        <div class="text-sm font-semibold" id="userName">Andrea Ruiz</div>
+                        <div class="text-xs text-gray-500">Usuario</div>
+                    </div>
+                    <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex space-x-8">
+                <button class="px-4 py-4 border-b-2 border-black font-semibold flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <span>Buscar Profesionales</span>
+                </button>
+                <button class="px-4 py-4 text-gray-600 hover:text-gray-900 font-semibold flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Mis Citas</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-full mx-auto px-6 sm:px-8 lg:px-12 py-8">
+        <h1 class="text-3xl font-bold mb-2">Buscar Profesionales</h1>
+        <p class="text-gray-600 mb-8">Encuentra el profesional ideal según tu necesidad</p>
+
+        <!-- Filters Section -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="font-semibold mb-4">Filtros de Búsqueda</h2>
+            <div class="grid md:grid-cols-2 xl:grid-cols-2 gap-4">
+                <div>
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Buscar por nombre o especialidad..." 
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onkeyup="filterProfessionals()"
+                        >
+                    </div>
+                </div>
+                <div>
+                    <select 
+                        id="specialtyFilter"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                        onchange="filterProfessionals()"
+                        style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 24 24%27 stroke=%27%236b7280%27%3E%3Cpath stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27M19 9l-7 7-7-7%27%3E%3C/path%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 20px;"
+                    >
+                        <option value="">Todas las especialidades</option>
+                        <option value="odontologia">Odontología</option>
+                        <option value="medicina">Medicina General</option>
+                        <option value="psicologia">Psicología</option>
+                        <option value="fisioterapia">Fisioterapia</option>
+                        <option value="nutricion">Nutrición</option>
+                        <option value="cardiologia">Cardiología</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professionals Grid -->
+        <div id="professionalsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Professional Cards will be inserted here -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center py-12 hidden">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-gray-500 text-lg">No se encontraron profesionales con esos criterios</p>
+        </div>
+    </main>
+
+    <script>
+        // Sample data - profesionales
+        const professionals = [
+            {
+                name: "Andrea Ruiz",
+                specialty: "Odontología",
+                specialtyKey: "odontologia",
+                description: "Soy una odontóloga profesional con más de 10 años de experiencia en tratamientos dentales.",
+                rating: 4.8,
+                reviews: 127
+            },
+            {
+                name: "Carlos Mendoza",
+                specialty: "Medicina General",
+                specialtyKey: "medicina",
+                description: "Médico general especializado en atención primaria y medicina preventiva.",
+                rating: 4.9,
+                reviews: 203
+            },
+            {
+                name: "Laura Gómez",
+                specialty: "Psicología",
+                specialtyKey: "psicologia",
+                description: "Psicóloga clínica con enfoque en terapia cognitivo-conductual y manejo de ansiedad.",
+                rating: 4.7,
+                reviews: 89
+            },
+            {
+                name: "Roberto Silva",
+                specialty: "Fisioterapia",
+                specialtyKey: "fisioterapia",
+                description: "Fisioterapeuta deportivo especializado en rehabilitación y prevención de lesiones.",
+                rating: 4.6,
+                reviews: 145
+            },
+            {
+                name: "María Fernández",
+                specialty: "Nutrición",
+                specialtyKey: "nutricion",
+                description: "Nutricionista certificada en planes alimenticios personalizados y control de peso.",
+                rating: 4.9,
+                reviews: 178
+            },
+            {
+                name: "José Ramírez",
+                specialty: "Cardiología",
+                specialtyKey: "cardiologia",
+                description: "Cardiólogo con especialización en prevención cardiovascular y ecocardiografía.",
+                rating: 4.8,
+                reviews: 156
+            }
+        ];
+
+        // Function to create professional card
+        function createProfessionalCard(professional) {
+            return `
+                <div class="card-professional bg-white rounded-lg shadow-md p-6 border border-gray-100" data-name="${professional.name.toLowerCase()}" data-specialty="${professional.specialtyKey}">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold">${professional.name}</h3>
+                        <span class="badge-specialty">${professional.specialty}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">${professional.description}</p>
+                    <div class="flex items-center mb-4 text-sm text-gray-500">
+                        <svg class="w-5 h-5 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <span class="font-semibold">${professional.rating}</span>
+                        <span class="mx-1">•</span>
+                        <span>${professional.reviews} reseñas</span>
+                    </div>
+                    <button onclick="scheduleAppointment('${professional.name}')" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Agendar Cita</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        // Load professionals
+        function loadProfessionals() {
+            const grid = document.getElementById('professionalsGrid');
+            grid.innerHTML = professionals.map(prof => createProfessionalCard(prof)).join('');
+        }
+
+        // Filter professionals
+        function filterProfessionals() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const specialtyFilter = document.getElementById('specialtyFilter').value;
+            const cards = document.querySelectorAll('.card-professional');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const specialty = card.getAttribute('data-specialty');
+                
+                const matchesSearch = name.includes(searchTerm) || specialty.includes(searchTerm);
+                const matchesSpecialty = !specialtyFilter || specialty === specialtyFilter;
+
+                if (matchesSearch && matchesSpecialty) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show/hide no results message
+            document.getElementById('noResults').classList.toggle('hidden', visibleCount > 0);
+        }
+
+        // Schedule appointment
+        function scheduleAppointment(professionalName) {
+            alert(`Agendando cita con ${professionalName}...\n\nEn la versión final, esto abrirá un calendario para seleccionar fecha y hora.`);
+        }
+
+        // Initialize
+        loadProfessionals();
+    </script>
+</body>
+</html>

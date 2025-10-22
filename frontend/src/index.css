@@ -104,6 +104,12 @@ select.input-field {
     padding-right: 40px;
 }
 
+/* Cliente */
+.logo1 img {
+    width: 155px;
+    height: auto;
+}
+
 /* Landing */
 @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
