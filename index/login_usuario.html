@@ -6,7 +6,7 @@
     <title>Login | Health In The Pearl</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon"type="image/x-icon" href="/frontend/public/logo4.png">
-    <link rel="stylesheet" href="../index.css">
+    <link rel="stylesheet" href="/frontend/src/index.css">
 </head>
 <body>
     <div class="form-container">
@@ -16,10 +16,13 @@
     </div>
         <h2 class="text-2xl font-bold text-center mb-2">Gestor de Citas</h2>
         <p class="text-gray-600 text-center mb-6 text-sm">Agenda y administra citas de manera fácil y organizada</p>
+
+        <!-- Tabs -->
         <div class="flex gap-2 mb-6 bg-gray-50 p-1 rounded-lg">
             <div class="tab active flex-1 text-center" onclick="showTab('login')">Iniciar Sesión</div>
             <div class="tab flex-1 text-center" onclick="showTab('register')">Registrarse</div>
         </div>
+
         <!-- Login Form -->
         <div id="login-form" class="form-section active">
             <form onsubmit="handleLogin(event)">
@@ -36,7 +39,7 @@
                 <button type="submit" class="btn-primary">Iniciar Sesión</button>
 
                 <div class="text-center mt-4">
-                    <a href="#" class="text-sm text-green-600 hover:text-green-700">¿Olvidaste tu contraseña?</a>
+                    <a href="../pages/usuario.html" class="text-sm text-green-600 hover:text-green-700">¿Olvidaste tu contraseña?</a>
                 </div>
             </form>
         </div>
@@ -62,30 +65,10 @@
                     <label class="block text-sm font-semibold mb-2">Tipo de Usuario</label>
                     <select class="input-field" required>
                         <option value="">Selecciona una opción</option>
-                        <option value="profesional">Profesional</option>
+                        <option value="cliente">Cliente</option>
                     </select>
                 </div>
-
-                <div class="mb-4" id="especialidad-field" style="display: none;">
-                    <label class="block text-sm font-semibold mb-2">Especialidad (solo profesionales)</label>
-                    <select class="input-field">
-                        <option value="">Selecciona tu especialidad</option>
-                        <option value="medico">Médico General</option>
-                        <option value="dentista">Odontólogo</option>
-                        <option value="psicologo">Psicólogo</option>
-                        <option value="fisioterapeuta">Fisioterapeuta</option>
-                        <option value="nutricionista">Nutricionista</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                </div>
-
-                <div class="mb-6" id="biografia-field" style="display: none;">
-                    <label class="block text-sm font-semibold mb-2">Biografía (solo profesionales)</label>
-                    <textarea class="input-field" rows="3" placeholder="Cuéntanos sobre tu experiencia..."></textarea>
-                </div>
-
                 <button type="submit" class="btn-primary">Crear Cuenta</button>
-
                 <p class="text-xs text-gray-500 text-center mt-4">
                     Al registrarte, aceptas nuestros términos y condiciones
                 </p>
@@ -111,27 +94,12 @@
                 document.getElementById('register-form').classList.add('active');
             }
         }
-        // Mostrar campos adicionales para profesionales
-        document.querySelector('#register-form select').addEventListener('change', function(e) {
-            const especialidadField = document.getElementById('especialidad-field');
-            const biografiaField = document.getElementById('biografia-field');
-            
-            if (e.target.value === 'profesional') {
-                especialidadField.style.display = 'block';
-                biografiaField.style.display = 'block';
-            } else {
-                especialidadField.style.display = 'none';
-                biografiaField.style.display = 'none';
-            }
-        });
-
         // Manejar login
         function handleLogin(e) {
             e.preventDefault();
             alert('¡Inicio de sesión exitoso! Redirigiendo al panel de control...');
             // Aquí iría la lógica de autenticación real
         }
-
         // Manejar registro
         function handleRegister(e) {
             e.preventDefault();

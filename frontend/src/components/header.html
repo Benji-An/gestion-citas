@@ -34,12 +34,8 @@
             const userName = localStorage.getItem('userName') || 'Usuario';
             document.getElementById('userName').textContent = userName;
         });
-
-        // Función para cerrar sesión
-        function handleLogout() {
-            // Limpiar el localStorage
+        function handleLogout() { 
             localStorage.clear();
-            // Redirigir al login
             window.location.href = '../pages/login_usuario.html';
         }
     </script>
