@@ -8,10 +8,3 @@ Se utiliza la herramienta de diseño de base de datos WorkBench en la cual se cr
 Se empieza por la creacion de las carpetas las cuales corresponden a cada parte rol del desarrollo: FrontEnd y Backed
 
 # Carpeta BackEnd
-Esta se empieza contiene la siguiente estructura
-
--backend
---auth = carpeta en la cual se guardaran todas las interacciones que correspondas a verificacion o autorizaciones
----login.py
---db = carpeta en donde se crea el archivo donde se conecta a la base de datos
----config.py
