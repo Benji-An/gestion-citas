@@ -110,6 +110,23 @@ select.input-field {
     height: auto;
 }
 
+.card-professional {
+    transition: all 0.3s ease;
+}
+.card-professional:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+.badge-specialty {
+    display: inline-block;
+    padding: 6px 16px;
+    background-color: #24BF5B;
+    color: white;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
 /* Landing */
 @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }

@@ -6,76 +6,44 @@
     <title>Buscar Profesionales - Health In The Pearl</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../index.css">
-    <style>
-        body {
-            background-color: #f5f5f7;
-        }
-        .card-professional {
-            transition: all 0.3s ease;
-        }
-        .card-professional:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        .badge-specialty {
-            display: inline-block;
-            padding: 6px 16px;
-            background-color: #3b82f6;
-            color: white;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-    </style>
+    <link rel="icon"type="image/x-icon" href="/frontend/public/logo4.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="../js/loadComponents.js"></script>
 </head>
 <body>
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex justify-between items-center">
-                <div class="logo1 flex items-center">
-                   <img src="/frontend/public/logo2.png" alt="">
-                </div>
-                <div class="flex items-center space-x-3">
-                    <div class="text-right">
-                        <div class="text-sm font-semibold" id="userName">Andrea Ruiz</div>
-                        <div class="text-xs text-gray-500">Usuario</div>
-                    </div>
-                    <button class="p-2 hover:bg-gray-100 rounded-lg transition">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
+    <div id="header-container"></div>
+    
     <!-- Navigation Tabs -->
     <div class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-full mx-auto px-6 sm:px-8 lg:px-12">
             <div class="flex space-x-8">
-                <button class="px-4 py-4 border-b-2 border-black font-semibold flex items-center space-x-2">
+                <button onclick="showSection('buscar')" id="tab-buscar" class="px-4 py-4 border-b-2 border-black font-semibold flex items-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                     <span>Buscar Profesionales</span>
                 </button>
-                <button class="px-4 py-4 text-gray-600 hover:text-gray-900 font-semibold flex items-center space-x-2">
+                <button onclick="showSection('citas')" id="tab-citas" class="px-4 py-4 text-gray-600 hover:text-gray-900 font-semibold flex items-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     <span>Mis Citas</span>
                 </button>
+                <button onclick="showSection('historias')" id="tab-historias" class="px-4 py-4 text-gray-600 hover:text-gray-900 font-semibold flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span>Historias Médicas</span>
+            </button>
             </div>
         </div>
     </div>
-
-    <!-- Main Content -->
-    <main class="max-w-full mx-auto px-6 sm:px-8 lg:px-12 py-8">
+    <!-- Main Content - Buscar Profesionales -->
+    <main id="section-buscar" class="max-w-full mx-auto px-6 sm:px-8 lg:px-12 py-8">
         <h1 class="text-3xl font-bold mb-2">Buscar Profesionales</h1>
         <p class="text-gray-600 mb-8">Encuentra el profesional ideal según tu necesidad</p>
-
         <!-- Filters Section -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
             <h2 class="font-semibold mb-4">Filtros de Búsqueda</h2>
@@ -112,12 +80,10 @@
                 </div>
             </div>
         </div>
-
         <!-- Professionals Grid -->
-        <div id="professionalsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="professionalsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <!-- Professional Cards will be inserted here -->
         </div>
-
         <!-- No Results Message -->
         <div id="noResults" class="text-center py-12 hidden">
             <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +92,115 @@
             <p class="text-gray-500 text-lg">No se encontraron profesionales con esos criterios</p>
         </div>
     </main>
+    <!-- Mis Citas -->
+    <main id="section-citas" class="max-w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 hidden">
+        <h1 class="text-3xl font-bold mb-2">Mis Citas</h1>
+        <p class="text-gray-600 mb-8">Gestiona todas tus citas médicas</p>
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-blue-600 font-semibold">Próximas</p>
+                        <p class="text-2xl font-bold text-blue-700" id="count-proximas">0</p>
+                    </div>
+                    <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-green-600 font-semibold">Completadas</p>
+                        <p class="text-2xl font-bold text-green-700" id="count-completadas">0</p>
+                    </div>
+                    <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-red-600 font-semibold">Canceladas</p>
+                        <p class="text-2xl font-bold text-red-700" id="count-canceladas">0</p>
+                    </div>
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-purple-600 font-semibold">Total</p>
+                        <p class="text-2xl font-bold text-purple-700" id="count-total">0</p>
+                    </div>
+                    <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="flex border-b overflow-x-auto">
+                <button onclick="filterAppointments('todas')" id="filter-todas" class="px-6 py-3 font-semibold border-b-2 border-blue-600 text-blue-600 whitespace-nowrap">
+                    Todas
+                </button>
+                <button onclick="filterAppointments('proximas')" id="filter-proximas" class="px-6 py-3 font-semibold text-gray-600 hover:text-gray-900 whitespace-nowrap">
+                    Próximas
+                </button>
+                <button onclick="filterAppointments('completadas')" id="filter-completadas" class="px-6 py-3 font-semibold text-gray-600 hover:text-gray-900 whitespace-nowrap">
+                    Completadas
+                </button>
+                <button onclick="filterAppointments('canceladas')" id="filter-canceladas" class="px-6 py-3 font-semibold text-gray-600 hover:text-gray-900 whitespace-nowrap">
+                    Canceladas
+                </button>
+            </div>
+        </div>
+        <div id="appointmentsList" class="space-y-4">
+        </div>
+        <div id="emptyAppointments" class="text-center py-12 hidden">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <p class="text-gray-500 text-lg">No tienes citas en esta categoría</p>
+        </div>
+    </main>
+    <!-- Historias Médicas -->
+    <main id="section-historias" class="max-w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 hidden">
+        <h1 class="text-3xl font-bold mb-2">Historias Médicas</h1>
+        <p class="text-gray-600 mb-8">Consulta tu historial médico por especialidad</p>
 
+        <!-- Filtro por especialidad -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="grid md:grid-cols-2 gap-4">
+                <select id="specialtyHistoryFilter" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Todas las especialidades</option>
+                    <option value="odontologia">Odontología</option>
+                    <option value="medicina">Medicina General</option>
+                    <option value="psicologia">Psicología</option>
+                    <option value="fisioterapia">Fisioterapia</option>
+                    <option value="nutricion">Nutrición</option>
+                    <option value="cardiologia">Cardiología</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Lista de historias médicas -->
+        <div id="medicalHistoryList" class="space-y-4">
+            <!-- Las historias médicas se cargarán aquí -->
+        </div>
+
+        <!-- Mensaje cuando no hay historias -->
+        <div id="emptyHistory" class="text-center py-12 hidden">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-gray-500 text-lg">No hay historias médicas disponibles</p>
+        </div>
+    </main>
     <script>
         // Sample data - profesionales
         const professionals = [
@@ -180,40 +254,313 @@
             }
         ];
 
+        // Sample data - citas
+        const appointments = [
+            {
+                id: 1,
+                professional: "Andrea Ruiz",
+                specialty: "Odontología",
+                date: "2025-10-25",
+                time: "10:00 AM",
+                status: "proximas",
+                reason: "Limpieza dental"
+            },
+            {
+                id: 2,
+                professional: "Carlos Mendoza",
+                specialty: "Medicina General",
+                date: "2025-10-28",
+                time: "3:00 PM",
+                status: "proximas",
+                reason: "Consulta general"
+            },
+            {
+                id: 3,
+                professional: "Laura Gómez",
+                specialty: "Psicología",
+                date: "2025-11-02",
+                time: "11:00 AM",
+                status: "proximas",
+                reason: "Terapia cognitiva"
+            },
+            {
+                id: 4,
+                professional: "María Fernández",
+                specialty: "Nutrición",
+                date: "2025-10-15",
+                time: "9:00 AM",
+                status: "completadas",
+                reason: "Plan nutricional"
+            },
+            {
+                id: 5,
+                professional: "Roberto Silva",
+                specialty: "Fisioterapia",
+                date: "2025-10-10",
+                time: "2:00 PM",
+                status: "completadas",
+                reason: "Rehabilitación"
+            },
+            {
+                id: 6,
+                professional: "José Ramírez",
+                specialty: "Cardiología",
+                date: "2025-10-18",
+                time: "4:00 PM",
+                status: "canceladas",
+                reason: "Chequeo cardiaco"
+            },
+            {
+                id: 7,
+                professional: "Andrea Ruiz",
+                specialty: "Odontología",
+                date: "2025-09-20",
+                time: "10:30 AM",
+                status: "completadas",
+                reason: "Extracción dental"
+            }
+        ];
+
+        // Sample data - historias médicas
+        const medicalHistory = [
+            {
+                id: 1,
+                date: "2025-10-15",
+                professional: "Andrea Ruiz",
+                specialty: "Odontología",
+                diagnosis: "Caries dental",
+                treatment: "Limpieza dental y empaste",
+                notes: "Paciente presenta sensibilidad al frío. Se recomienda usar pasta dental sensible.",
+                nextAppointment: "2025-10-29"
+            },
+            {
+                id: 2,
+                date: "2025-10-10",
+                professional: "Carlos Mendoza",
+                specialty: "Medicina General",
+                diagnosis: "Gripe estacional",
+                treatment: "Acetaminofén y descongestivo",
+                notes: "Reposo por 3 días. Mantener hidratación.",
+                nextAppointment: "2025-10-17"
+            }
+            // Puedes agregar más historias médicas aquí
+        ];
+
+        let currentFilter = 'todas';
+
+        // Show section
+        function showSection(section) {
+            if (section === 'buscar') {
+                document.getElementById('section-buscar').classList.remove('hidden');
+                document.getElementById('section-citas').classList.add('hidden');
+                document.getElementById('section-historias').classList.add('hidden');
+                document.getElementById('tab-buscar').classList.add('border-b-2', 'border-black');
+                document.getElementById('tab-buscar').classList.remove('text-gray-600');
+                document.getElementById('tab-citas').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-citas').classList.add('text-gray-600');
+                document.getElementById('tab-historias').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-historias').classList.add('text-gray-600');
+            } else if (section === 'citas') {
+                document.getElementById('section-buscar').classList.add('hidden');
+                document.getElementById('section-citas').classList.remove('hidden');
+                document.getElementById('section-historias').classList.add('hidden');
+                document.getElementById('tab-citas').classList.add('border-b-2', 'border-black');
+                document.getElementById('tab-citas').classList.remove('text-gray-600');
+                document.getElementById('tab-buscar').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-buscar').classList.add('text-gray-600');
+                document.getElementById('tab-historias').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-historias').classList.add('text-gray-600');
+                loadAppointments();
+                updateCounts();
+            } else if (section === 'historias') {
+                document.getElementById('section-buscar').classList.add('hidden');
+                document.getElementById('section-citas').classList.add('hidden');
+                document.getElementById('section-historias').classList.remove('hidden');
+                // Actualizar estilos de tabs
+                document.getElementById('tab-historias').classList.add('border-b-2', 'border-black');
+                document.getElementById('tab-historias').classList.remove('text-gray-600');
+                document.getElementById('tab-buscar').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-buscar').classList.add('text-gray-600');
+                document.getElementById('tab-citas').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-citas').classList.add('text-gray-600');
+                loadMedicalHistory();
+            }
+        }
+
         // Function to create professional card
         function createProfessionalCard(professional) {
             return `
-                <div class="card-professional bg-white rounded-lg shadow-md p-6 border border-gray-100" data-name="${professional.name.toLowerCase()}" data-specialty="${professional.specialtyKey}">
+                <div class="card-professional bg-white rounded-lg shadow-sm p-6">
                     <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-xl font-bold">${professional.name}</h3>
-                        <span class="badge-specialty">${professional.specialty}</span>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900">${professional.name}</h3>
+                            <span class="badge-specialty">${professional.specialty}</span>
+                        </div>
                     </div>
-                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">${professional.description}</p>
-                    <div class="flex items-center mb-4 text-sm text-gray-500">
-                        <svg class="w-5 h-5 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                        </svg>
-                        <span class="font-semibold">${professional.rating}</span>
-                        <span class="mx-1">•</span>
-                        <span>${professional.reviews} reseñas</span>
+                    <p class="text-gray-600 mb-4 line-clamp-2">${professional.description}</p>
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            <span class="ml-1 text-gray-600">${professional.rating}</span>
+                            <span class="mx-2 text-gray-400">•</span>
+                            <span class="text-gray-600">${professional.reviews} reseñas</span>
+                        </div>
                     </div>
-                    <button onclick="scheduleAppointment('${professional.name}')" class="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition flex items-center justify-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    <button onclick="scheduleAppointment('${professional.name}')" 
+                            class="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                         </svg>
-                        <span>Agendar Cita</span>
+                        Agendar Cita
                     </button>
                 </div>
             `;
         }
 
-        // Load professionals
+        // Function to create appointment card
+        function createAppointmentCard(appointment) {
+            const statusColors = {
+                proximas: 'bg-blue-50 border-blue-200',
+                completadas: 'bg-green-50 border-green-200',
+                canceladas: 'bg-red-50 border-red-200'
+            };
+            
+            const statusBadges = {
+                proximas: '<span class="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">Próxima</span>',
+                completadas: '<span class="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">Completada</span>',
+                canceladas: '<span class="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">Cancelada</span>'
+            };
+
+            const actions = appointment.status === 'proximas' 
+                ? `
+                    <button onclick="rescheduleAppointment(${appointment.id})" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
+                        Reprogramar
+                    </button>
+                    <button onclick="cancelAppointment(${appointment.id})" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                        Cancelar
+                    </button>
+                `
+                : appointment.status === 'completadas'
+                ? `<button onclick="scheduleAppointment('${appointment.professional}')" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium">Agendar de nuevo</button>`
+                : '';
+
+            return `
+                <div class="appointment-card ${statusColors[appointment.status]} border rounded-lg p-5" data-status="${appointment.status}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold mb-0.5">${appointment.professional}</h3>
+                            <p class="text-xs text-gray-600">${appointment.specialty}</p>
+                        </div>
+                        ${statusBadges[appointment.status]}
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-3 mb-3">
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold mb-1">Fecha:</p>
+                            <div class="flex items-center text-gray-700">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                <span class="text-sm font-medium">${formatDate(appointment.date)}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold mb-1">Hora:</p>
+                            <div class="flex items-center text-gray-700">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="text-sm font-medium">${appointment.time}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold mb-1">Motivo:</p>
+                            <p class="text-sm text-gray-700 font-medium">${appointment.reason}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        ${actions}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('es-ES', options);
+        }
+
+        // Update counts
+        function updateCounts() {
+            const proximas = appointments.filter(a => a.status === 'proximas').length;
+            const completadas = appointments.filter(a => a.status === 'completadas').length;
+            const canceladas = appointments.filter(a => a.status === 'canceladas').length;
+            
+            document.getElementById('count-proximas').textContent = proximas;
+            document.getElementById('count-completadas').textContent = completadas;
+            document.getElementById('count-canceladas').textContent = canceladas;
+            document.getElementById('count-total').textContent = appointments.length;
+        }
+
+        // Load appointments
+        function loadAppointments() {
+            const list = document.getElementById('appointmentsList');
+            list.innerHTML = appointments.map(app => createAppointmentCard(app)).join('');
+            filterAppointments(currentFilter);
+        }
+
+        // Filter appointments
+        function filterAppointments(filter) {
+            currentFilter = filter;
+            const cards = document.querySelectorAll('.appointment-card');
+            const filterButtons = document.querySelectorAll('[id^="filter-"]');
+            let visibleCount = 0;
+
+            // Update active filter button
+            filterButtons.forEach(btn => {
+                btn.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+                btn.classList.add('text-gray-600');
+            });
+            document.getElementById(`filter-${filter}`).classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+            document.getElementById(`filter-${filter}`).classList.remove('text-gray-600');
+
+            cards.forEach(card => {
+                const status = card.getAttribute('data-status');
+                if (filter === 'todas' || status === filter) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('emptyAppointments').classList.toggle('hidden', visibleCount > 0);
+        }
+
+        function rescheduleAppointment(id) {
+            alert(`Reprogramando cita #${id}...\n\nEn la versión final, esto abrirá un calendario para seleccionar nueva fecha.`);
+        }
+
+        function cancelAppointment(id) {
+            if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+                const appointment = appointments.find(a => a.id === id);
+                if (appointment) {
+                    appointment.status = 'canceladas';
+                    loadAppointments();
+                    updateCounts();
+                    alert('Cita cancelada exitosamente');
+                }
+            }
+        }
+
         function loadProfessionals() {
             const grid = document.getElementById('professionalsGrid');
             grid.innerHTML = professionals.map(prof => createProfessionalCard(prof)).join('');
         }
 
-        // Filter professionals
         function filterProfessionals() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const specialtyFilter = document.getElementById('specialtyFilter').value;
@@ -235,17 +582,90 @@
                 }
             });
 
-            // Show/hide no results message
             document.getElementById('noResults').classList.toggle('hidden', visibleCount > 0);
         }
 
-        // Schedule appointment
         function scheduleAppointment(professionalName) {
             alert(`Agendando cita con ${professionalName}...\n\nEn la versión final, esto abrirá un calendario para seleccionar fecha y hora.`);
         }
 
-        // Initialize
+        function createMedicalHistoryCard(history) {
+            return `
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold">${history.professional}</h3>
+                            <p class="text-sm text-gray-600">${history.specialty}</p>
+                        </div>
+                        <span class="text-sm text-gray-500">${formatDate(history.date)}</span>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold mb-1">Diagnóstico:</p>
+                            <p class="text-gray-700">${history.diagnosis}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-semibold mb-1">Tratamiento:</p>
+                            <p class="text-gray-700">${history.treatment}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 font-semibold mb-1">Notas:</p>
+                        <p class="text-gray-700">${history.notes}</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t">
+                        <p class="text-sm text-gray-500">Próxima cita: <span class="font-semibold">${formatDate(history.nextAppointment)}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadMedicalHistory() {
+            const list = document.getElementById('medicalHistoryList');
+            list.innerHTML = medicalHistory.map(history => createMedicalHistoryCard(history)).join('');
+            document.getElementById('emptyHistory').classList.toggle('hidden', medicalHistory.length > 0);
+        }
+
+        // Actualiza la función showSection para incluir historias médicas
+        function showSection(section) {
+            if (section === 'buscar') {
+                document.getElementById('section-buscar').classList.remove('hidden');
+                document.getElementById('section-citas').classList.add('hidden');
+                document.getElementById('section-historias').classList.add('hidden');
+                document.getElementById('tab-buscar').classList.add('border-b-2', 'border-black');
+                document.getElementById('tab-buscar').classList.remove('text-gray-600');
+                document.getElementById('tab-citas').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-citas').classList.add('text-gray-600');
+                document.getElementById('tab-historias').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-historias').classList.add('text-gray-600');
+            } else if (section === 'citas') {
+                document.getElementById('section-buscar').classList.add('hidden');
+                document.getElementById('section-citas').classList.remove('hidden');
+                document.getElementById('section-historias').classList.add('hidden');
+                document.getElementById('tab-citas').classList.add('border-b-2', 'border-black');
+                document.getElementById('tab-citas').classList.remove('text-gray-600');
+                document.getElementById('tab-buscar').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-buscar').classList.add('text-gray-600');
+                document.getElementById('tab-historias').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-historias').classList.add('text-gray-600');
+                loadAppointments();
+                updateCounts();
+            } else if (section === 'historias') {
+                document.getElementById('section-buscar').classList.add('hidden');
+                document.getElementById('section-citas').classList.add('hidden');
+                document.getElementById('section-historias').classList.remove('hidden');
+                // Actualizar estilos de tabs
+                document.getElementById('tab-historias').classList.add('border-b-2', 'border-black');
+                document.getElementById('tab-historias').classList.remove('text-gray-600');
+                document.getElementById('tab-buscar').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-buscar').classList.add('text-gray-600');
+                document.getElementById('tab-citas').classList.remove('border-b-2', 'border-black');
+                document.getElementById('tab-citas').classList.add('text-gray-600');
+                loadMedicalHistory();
+            }
+        }
+
         loadProfessionals();
-    </script>
+    </script>       
 </body>
 </html>
