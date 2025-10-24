@@ -107,16 +107,173 @@
         </div>
     </main>
 
-    <!-- Horario Section -->
-    <main id="section-horario" class="mx-auto px-8 py-8 hidden" style="max-width: 98%">
+      <!-- Horario Section -->
+    <main id="section-horario" class="mx-auto px-8 py-8" style="max-width: 98%">
         <h1 class="text-3xl font-bold mb-2">Configurar Horario</h1>
         <p class="text-gray-600 mb-8">Define tu disponibilidad semanal</p>
-        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p class="text-gray-500">Funcionalidad de horario próximamente</p>
+
+        <!-- Controles superiores -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex space-x-4">
+                <button class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium">
+                    Guardar cambios
+                </button>
+                <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700 font-medium">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Restaurar horario
+                </button>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600">Zona horaria: UTC-5</span>
+            </div>
+        </div>
+
+        <!-- Calendario Semanal -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <!-- Cabecera del calendario -->
+            <div class="grid grid-cols-8 border-b">
+                <div class="py-4 px-6 bg-gray-50 border-r">
+                    <span class="text-sm font-medium text-gray-500">Horario</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Lunes</span>
+                    <span class="text-xs text-gray-500">21 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Martes</span>
+                    <span class="text-xs text-gray-500">22 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Miércoles</span>
+                    <span class="text-xs text-gray-500">23 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Jueves</span>
+                    <span class="text-xs text-gray-500">24 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Viernes</span>
+                    <span class="text-xs text-gray-500">25 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Sábado</span>
+                    <span class="text-xs text-gray-500">26 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center">
+                    <span class="block text-sm font-medium text-gray-900">Domingo</span>
+                    <span class="text-xs text-gray-500">27 Oct</span>
+                </div>
+            </div>
+
+            <!-- Slots de tiempo -->
+            <div class="divide-y" id="timeSlots">
+                <!-- Las franjas horarias se generarán dinámicamente con JavaScript -->
+            </div>
+        </div>
+
+        <!-- Configuración de disponibilidad -->
+        <div class="grid grid-cols-3 gap-6">
+            <!-- Configuración de horarios -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Horarios predeterminados</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de inicio</label>
+                        <select class="w-full rounded-lg border-gray-300 hora-inicio">
+                            <!-- Las opciones se generarán dinámicamente -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de fin</label>
+                        <select class="w-full rounded-lg border-gray-300 hora-fin">
+                            <!-- Las opciones se generarán dinámicamente -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Días laborales</label>
+                        <div class="space-y-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
+                                <span class="ml-2 text-sm">Lunes a Viernes</span>
+                            </label>
+                            <label class="inline-flex items-center block">
+                                <input type="checkbox" class="form-checkbox rounded text-blue-600">
+                                <span class="ml-2 text-sm">Sábados</span>
+                            </label>
+                            <label class="inline-flex items-center block">
+                                <input type="checkbox" class="form-checkbox rounded text-blue-600">
+                                <span class="ml-2 text-sm">Domingos</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de citas -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Configuración de citas</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Duración de citas</label>
+                        <select class="w-full rounded-lg border-gray-300">
+                            <option>30 minutos</option>
+                            <option selected>45 minutos</option>
+                            <option>1 hora</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Intervalo entre citas</label>
+                        <select class="w-full rounded-lg border-gray-300">
+                            <option>Sin intervalo</option>
+                            <option>5 minutos</option>
+                            <option selected>15 minutos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Citas simultáneas</label>
+                        <select class="w-full rounded-lg border-gray-300">
+                            <option selected>1 cita a la vez</option>
+                            <option>2 citas a la vez</option>
+                            <option>3 citas a la vez</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de notificaciones -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Notificaciones</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Recordatorios</label>
+                        <div class="space-y-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
+                                <span class="ml-2 text-sm">Email al paciente</span>
+                            </label>
+                            <label class="inline-flex items-center block">
+                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
+                                <span class="ml-2 text-sm">Email al profesional</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirmaciones</label>
+                        <div class="space-y-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
+                                <span class="ml-2 text-sm">Confirmar automáticamente</span>
+                            </label>
+                            <label class="inline-flex items-center block">
+                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
+                                <span class="ml-2 text-sm">Notificar confirmación</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -516,6 +673,136 @@
             updateCounts();
             updateStatistics(); // Add this line
         }
+
+        // Función para generar todas las franjas horarias
+        function generateTimeSlots() {
+            const timeSlots = document.getElementById('timeSlots');
+            timeSlots.innerHTML = ''; // Limpiar el contenido existente
+
+            // Generar slots desde 6:00 AM hasta 6:00 PM
+            for (let hour = 6; hour <= 18; hour++) {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'grid grid-cols-8 divide-x';
+
+                // Formato de hora
+                const timeString = hour.toString().padStart(2, '0') + ':00';
+                const displayTime = `${hour === 12 ? '12:00' : (hour > 12 ? (hour - 12).toString() : hour.toString())}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
+
+                // Crear la celda de hora
+                let slotHTML = `
+            <div class="py-4 px-6 border-r bg-gray-50">
+                <span class="text-sm text-gray-500">${displayTime}</span>
+            </div>
+        `;
+
+                // Agregar celdas para cada día
+                for (let day = 1; day <= 7; day++) {
+                    const isWeekend = day > 5;
+                    if (isWeekend) {
+                        slotHTML += `
+                    <div class="p-2 border-r bg-gray-50"></div>
+                `;
+                    } else {
+                        slotHTML += `
+                    <div class="p-2 border-r hover:bg-blue-50 cursor-pointer">
+                        <div class="h-full rounded-lg border-2 border-dashed border-blue-200 hover:border-blue-400 flex items-center justify-center">
+                            <span class="text-xs text-blue-600 font-medium">Disponible</span>
+                        </div>
+                    </div>
+                `;
+                    }
+                }
+
+                timeSlot.innerHTML = slotHTML;
+                timeSlots.appendChild(timeSlot);
+            }
+        }
+
+        // Función para inicializar el calendario
+        function initializeSchedule() {
+            // Actualizar las fechas en la cabecera
+            updateHeaderDates();
+            // Generar las franjas horarias
+            generateTimeSlots();
+            // Agregar eventos click a las celdas disponibles
+            addSlotClickHandlers();
+        }
+
+        // Función para actualizar las fechas en la cabecera
+        function updateHeaderDates() {
+            const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            const currentDate = new Date('2025-10-24'); // Usando la fecha proporcionada
+
+            // Encontrar el lunes de la semana actual
+            const monday = new Date(currentDate);
+            monday.setDate(currentDate.getDate() - (currentDate.getDay() - 1));
+
+            const headerCells = document.querySelectorAll('.grid.grid-cols-8 > div:not(:first-child)');
+            headerCells.forEach((cell, index) => {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + index);
+
+                const daySpan = cell.querySelector('span:first-child');
+                const dateSpan = cell.querySelector('span:last-child');
+
+                if (daySpan && dateSpan) {
+                    daySpan.textContent = days[index];
+                    dateSpan.textContent = date.getDate() + ' Oct';
+                }
+            });
+        }
+
+        // Función para manejar clics en las celdas
+        function addSlotClickHandlers() {
+            const slots = document.querySelectorAll('.hover\\:bg-blue-50');
+            slots.forEach(slot => {
+                slot.addEventListener('click', function () {
+                    const currentStatus = this.querySelector('.border-dashed') ? 'available' : 'blocked';
+                    if (currentStatus === 'available') {
+                        this.innerHTML = `
+                    <div class="h-full rounded-lg bg-gray-100 flex items-center justify-center">
+                        <span class="text-xs text-gray-600 font-medium">Bloqueado</span>
+                    </div>
+                `;
+                    } else {
+                        this.innerHTML = `
+                    <div class="h-full rounded-lg border-2 border-dashed border-blue-200 hover:border-blue-400 flex items-center justify-center">
+                        <span class="text-xs text-blue-600 font-medium">Disponible</span>
+                    </div>
+                `;
+                    }
+                });
+            });
+        }
+
+        // Actualizar los selectores de hora en la configuración
+        function updateTimeSelectors() {
+            const startTimeSelect = document.querySelector('select[class*="hora-inicio"]');
+            const endTimeSelect = document.querySelector('select[class*="hora-fin"]');
+
+            if (startTimeSelect && endTimeSelect) {
+                startTimeSelect.innerHTML = '';
+                endTimeSelect.innerHTML = '';
+
+                for (let hour = 6; hour <= 18; hour++) {
+                    const timeString = `${hour.toString().padStart(2, '0')}:00`;
+                    const displayTime = `${hour === 12 ? '12:00' : (hour > 12 ? (hour - 12).toString() : hour.toString())}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
+
+                    startTimeSelect.innerHTML += `<option value="${timeString}">${displayTime}</option>`;
+                    endTimeSelect.innerHTML += `<option value="${timeString}">${displayTime}</option>`;
+                }
+
+                // Establecer valores predeterminados
+                startTimeSelect.value = '06:00';
+                endTimeSelect.value = '18:00';
+            }
+        }
+
+        // Inicializar todo cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeSchedule();
+            updateTimeSelectors();
+        });
     </script>
 </body>
 
