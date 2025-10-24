@@ -8,38 +8,41 @@
     <link rel="icon" type="image/x-icon" href="../frontend/public/logo4.png">
     <link rel="stylesheet" href="../frontend/src/index.css">
 </head>
-<body>
-    <div class="form-container">
-    <!-- Logo -->
-    <div class="logo flex items-center justify-center mb-6">
-        <img src="../frontend/public/logo2.png" alt="">
-    </div>
-        <h2 class="text-2xl font-bold text-center mb-2">Gestor de Citas</h2>
-        <p class="text-gray-600 text-center mb-6 text-sm">Agenda y administra citas de manera fácil y organizada</p>
-        <!-- Login Form -->
-        <div id="login-form" class="form-section active">
-            <form onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">Email</label>
-                    <input type="email" class="input-field" placeholder="tu@email.com" required>
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold mb-2">Contraseña</label>
-                    <input type="password" class="input-field" placeholder="••••••••" required>
-                </div>
-
-                <button type="submit" class="btn-primary">Iniciar Sesión</button>
-
-                <div class="text-center mt-4">
-                    <a href="#" class="text-sm text-green-600 hover:text-green-700">¿Olvidaste tu contraseña?</a>
-                </div>
-            </form>
+<body class="min-h-screen flex flex-col bg-white">
+    <main class="flex-grow flex items-center justify-center">
+        <div class="form-container">
+        <!-- Logo -->
+        <div class="logo flex items-center justify-center mb-6">
+            <img src="../frontend/public/logo2.png" alt="">
         </div>
-    </div>
-    <footer>
-        <p class="text-center text-gray-400 text-sm mt-6">© 2025 Health In The Pearl. Todos los derechos reservados.</p>
+            <h2 class="text-2xl font-bold text-center mb-2">Gestor de Citas</h2>
+            <p class="text-gray-600 text-center mb-6 text-sm">Agenda y administra citas de manera fácil y organizada</p>
+            <!-- Login Form -->
+            <div id="login-form" class="form-section active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold mb-2">Email</label>
+                        <input type="email" class="input-field" placeholder="tu@email.com" required>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold mb-2">Contraseña</label>
+                        <input type="password" class="input-field" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Iniciar Sesión</button>
+
+                    <div class="text-center mt-4">
+                        <a href="#" class="text-sm text-green-600 hover:text-green-700">¿Olvidaste tu contraseña?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    <footer class="py-6">
+        <p class="text-center text-gray-400 text-sm">© 2025 Health In The Pearl. Todos los derechos reservados.</p>
     </footer>
+
     <script>
         function showTab(tab) {
             const tabs = document.querySelectorAll('.tab');
