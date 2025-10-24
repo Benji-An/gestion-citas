@@ -1,4 +1,4 @@
-:root{
+:root {
     --primary-color: #4CAF50;
     --secondary-color: #FF9800;
     --background-color: #FFFFFF;
@@ -56,8 +56,15 @@ body {
 }
 
 @keyframes fadeIn {
-from { opacity: 0; transform: translateY(10px); }
-to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .input-field {
@@ -113,10 +120,12 @@ select.input-field {
 .card-professional {
     transition: all 0.3s ease;
 }
+
 .card-professional:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+
 .badge-specialty {
     display: inline-block;
     padding: 6px 16px;
@@ -127,12 +136,99 @@ select.input-field {
     font-weight: 500;
 }
 
+/* Profesional */
+.tab-button {
+    transition: all 0.3s ease;
+}
+
+.tab-button.active {
+    background-color: #000;
+    color: white;
+}
+
+.appointment-card {
+    transition: all 0.3s ease;
+}
+
+.appointment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-pendiente {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-confirmada {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-completada {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-cancelada {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.time-slot {
+    transition: all 0.3s ease;
+}
+
+.time-slot:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Estilos para los slots reservados */
+.slot-reserved {
+    background-color: rgba(59, 130, 246, 0.1);
+    cursor: not-allowed;
+}
+
+/* Animaciones para los cambios de estado */
+.slot-transition {
+    transition: all 0.3s ease;
+}
+
+/* Estilos para los días no laborables */
+.non-working-day {
+    background-color: #f9fafb;
+    cursor: not-allowed;
+}
+
 /* Landing */
 @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
-    .fade-in { animation: fadeIn 0.6s ease-out; }
-    .slide { display: none; }
-    .slide.active { display: block; }
 
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.slide {
+    display: none;
+}
+
+.slide.active {
+    display: block;
+}

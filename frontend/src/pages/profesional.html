@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profesional | Health In The Pearl</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../index.css">
+    <link rel="icon" type="image/x-icon" href="../../public/logo4.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="mx-auto px-8 py-4" style="max-width: 98%; width: 100%;">
+            <div class="flex justify-between items-center">
+                <div class="logo1 flex items-center">
+                    <img src="/frontend/public/logo2.png" alt="">
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="text-right">
+                        <div class="text-sm font-semibold">Andrea Ruiz</div>
+                        <div class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full inline-block">Odontología
+                        </div>
+                    </div>
+                    <a href="/index/login_profesional.html" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-white border-b">
+        <div class="mx-auto px-8" style="max-width: 98%">
+            <div class="flex space-x-2 py-3">
+                <button onclick="showTab('citas')" id="tab-citas"
+                    class="tab-button active px-4 py-2 rounded-lg font-medium flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Citas</span>
+                </button>
+                <button onclick="showTab('horario')" id="tab-horario"
+                    class="tab-button px-4 py-2 rounded-lg font-medium flex items-center space-x-2 text-gray-600 hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Horario</span>
+                </button>
+                <button onclick="showTab('estadisticas')" id="tab-estadisticas"
+                    class="tab-button px-4 py-2 rounded-lg font-medium flex items-center space-x-2 text-gray-600 hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Estadísticas</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content - Gestión de Citas -->
+    <main id="section-citas" class="mx-auto px-8 py-8" style="max-width: 98%">
+        <h1 class="text-3xl font-bold mb-2">Gestión de Citas</h1>
+        <p class="text-gray-600 mb-8">Administra las solicitudes y citas programadas</p>
+
+        <!-- Status Filters -->
+        <div class="bg-white rounded-lg shadow-sm p-2 mb-6 inline-flex space-x-2">
+            <button onclick="filterByStatus('pendientes')" id="filter-pendientes"
+                class="status-filter px-4 py-2 rounded-lg font-medium text-sm bg-gray-100">
+                Pendientes (<span id="count-pendientes">0</span>)
+            </button>
+            <button onclick="filterByStatus('confirmadas')" id="filter-confirmadas"
+                class="status-filter px-4 py-2 rounded-lg font-medium text-sm hover:bg-gray-100">
+                Confirmadas (<span id="count-confirmadas">0</span>)
+            </button>
+            <button onclick="filterByStatus('completadas')" id="filter-completadas"
+                class="status-filter px-4 py-2 rounded-lg font-medium text-sm hover:bg-gray-100">
+                Completadas (<span id="count-completadas">0</span>)
+            </button>
+            <button onclick="filterByStatus('canceladas')" id="filter-canceladas"
+                class="status-filter px-4 py-2 rounded-lg font-medium text-sm hover:bg-gray-100">
+                Canceladas (<span id="count-canceladas">0</span>)
+            </button>
+        </div>
+
+        <!-- Appointments List -->
+        <div id="appointmentsList" class="space-y-4">
+            <!-- Appointment cards will be inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden bg-white rounded-lg shadow-sm p-12 text-center">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p class="text-gray-500 text-lg">No hay citas pendientes</p>
+        </div>
+    </main>
+
+    <!-- Horario Section -->
+    <main id="section-horario" class="mx-auto px-8 py-8" style="max-width: 98%">
+        <h1 class="text-3xl font-bold mb-2">Configurar Horario</h1>
+        <p class="text-gray-600 mb-8">Define tu disponibilidad semanal</p>
+
+        <!-- Controles superiores -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex space-x-4">
+                <button class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium">
+                    Guardar cambios
+                </button>
+                <button
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700 font-medium">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Restaurar horario
+                </button>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600">Zona horaria: UTC-5</span>
+            </div>
+        </div>
+
+        <!-- Calendario Semanal -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <!-- Cabecera del calendario -->
+            <div class="grid grid-cols-8 border-b">
+                <div class="py-4 px-6 bg-gray-50 border-r">
+                    <span class="text-sm font-medium text-gray-500">Horario</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Lunes</span>
+                    <span class="text-xs text-gray-500">21 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Martes</span>
+                    <span class="text-xs text-gray-500">22 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Miércoles</span>
+                    <span class="text-xs text-gray-500">23 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Jueves</span>
+                    <span class="text-xs text-gray-500">24 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Viernes</span>
+                    <span class="text-xs text-gray-500">25 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center border-r">
+                    <span class="block text-sm font-medium text-gray-900">Sábado</span>
+                    <span class="text-xs text-gray-500">26 Oct</span>
+                </div>
+                <div class="py-4 px-6 text-center">
+                    <span class="block text-sm font-medium text-gray-900">Domingo</span>
+                    <span class="text-xs text-gray-500">27 Oct</span>
+                </div>
+            </div>
+            <!-- Slots de tiempo -->
+            <div class="divide-y" id="timeSlots">
+                <!-- Las franjas horarias se generarán dinámicamente con JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Estadísticas Section -->
+    <main id="section-estadisticas" class="mx-auto px-8 py-8 hidden" style="max-width: 98%">
+        <h1 class="text-3xl font-bold mb-2">Estadísticas</h1>
+        <p class="text-gray-600 mb-8">Visualiza el rendimiento de las citas y clientes</p>
+
+        <!-- Top Row Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Total de Citas -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-gray-700 font-semibold">Total de Citas</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="stats-total-citas">0</div>
+                <p class="text-sm text-gray-500">Todas las citas registradas</p>
+            </div>
+
+            <!-- Clientes Únicos -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-gray-700 font-semibold">Clientes Únicos</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="stats-clientes-unicos">0</div>
+                <p class="text-sm text-gray-500">Clientes atendidos</p>
+            </div>
+
+            <!-- Tasa de Completitud -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-gray-700 font-semibold">Tasa de Completitud</h3>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="stats-tasa-completitud">0%</div>
+                <p class="text-sm text-gray-500">Citas completadas exitosamente</p>
+            </div>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <!-- Pendientes -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-gray-700 font-semibold">Pendientes</h3>
+                    <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="stats-pendientes">0</div>
+                <p class="text-sm text-gray-500">Esperando confirmación</p>
+            </div>
+
+            <!-- Confirmadas -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-gray-700 font-semibold">Confirmadas</h3>
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="stats-confirmadas">0</div>
+                <p class="text-sm text-gray-500">Citas programadas</p>
+            </div>
+
+            <!-- Completadas -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-gray-700 font-semibold">Completadas</h3>
+                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="stats-completadas">0</div>
+                <p class="text-sm text-gray-500">Atendidas exitosamente</p>
+            </div>
+
+            <!-- Canceladas -->
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-gray-700 font-semibold">Canceladas</h3>
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="stats-canceladas">0</div>
+                <p class="text-sm text-gray-500">No realizadas</p>
+            </div>
+        </div>
+
+        <!-- Resumen -->
+        <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h3 class="text-gray-700 font-semibold mb-4">Resumen</h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Completadas</span>
+                    <span class="text-sm font-medium" id="stats-resumen-completadas">0 de 0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Estado actual</span>
+                    <span class="text-sm font-medium" id="stats-resumen-estado">0 pendientes, 0 confirmadas</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Total procesadas</span>
+                    <span class="text-sm font-medium" id="stats-resumen-total">0 citas</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sample appointments data
+        const appointments = [
+            {
+                id: 1,
+                patient: "Carlos Mendoza",
+                date: "2025-10-25",
+                time: "10:00 AM",
+                reason: "Limpieza dental",
+                status: "pendientes"
+            },
+            {
+                id: 2,
+                patient: "María González",
+                date: "2025-10-25",
+                time: "11:30 AM",
+                reason: "Revisión de ortodoncia",
+                status: "confirmadas"
+            },
+            {
+                id: 3,
+                patient: "Juan Pérez",
+                date: "2025-10-26",
+                time: "9:00 AM",
+                reason: "Extracción de muela",
+                status: "pendientes"
+            },
+            {
+                id: 4,
+                patient: "Laura Martínez",
+                date: "2025-10-20",
+                time: "3:00 PM",
+                reason: "Blanqueamiento dental",
+                status: "completadas"
+            },
+            {
+                id: 5,
+                patient: "Roberto Silva",
+                date: "2025-10-18",
+                time: "4:00 PM",
+                reason: "Consulta general",
+                status: "canceladas"
+            }
+        ];
+
+        let currentStatusFilter = 'pendientes';
+
+        // Show tab
+        function showTab(tab) {
+            // Hide all sections
+            document.getElementById('section-citas').classList.add('hidden');
+            document.getElementById('section-horario').classList.add('hidden');
+            document.getElementById('section-estadisticas').classList.add('hidden');
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'bg-black', 'text-white');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+            });
+
+            // Show selected section and activate tab
+            if (tab === 'citas') {
+                document.getElementById('section-citas').classList.remove('hidden');
+                document.getElementById('tab-citas').classList.add('active', 'bg-black', 'text-white');
+                document.getElementById('tab-citas').classList.remove('text-gray-600', 'hover:bg-gray-100');
+            } else if (tab === 'horario') {
+                document.getElementById('section-horario').classList.remove('hidden');
+                document.getElementById('tab-horario').classList.add('active', 'bg-black', 'text-white');
+                document.getElementById('tab-horario').classList.remove('text-gray-600', 'hover:bg-gray-100');
+            } else if (tab === 'estadisticas') {
+                document.getElementById('section-estadisticas').classList.remove('hidden');
+                document.getElementById('tab-estadisticas').classList.add('active', 'bg-black', 'text-white');
+                document.getElementById('tab-estadisticas').classList.remove('text-gray-600', 'hover:bg-gray-100');
+            }
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('es-ES', options);
+        }
+
+        // Create appointment card
+        function createAppointmentCard(appointment) {
+            const statusLabels = {
+                pendientes: 'Pendiente',
+                confirmadas: 'Confirmada',
+                completadas: 'Completada',
+                canceladas: 'Cancelada'
+            };
+
+            const statusBadgeClass = {
+                pendientes: 'badge-pendiente',
+                confirmadas: 'badge-confirmada',
+                completadas: 'badge-completada',
+                canceladas: 'badge-cancelada'
+            };
+
+            const actions = appointment.status === 'pendientes'
+                ? `
+                    <button onclick="confirmAppointment(${appointment.id})" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
+                        Confirmar
+                    </button>
+                    <button onclick="cancelAppointment(${appointment.id})" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
+                        Rechazar
+                    </button>
+                `
+                : appointment.status === 'confirmadas'
+                    ? `
+                    <button onclick="completeAppointment(${appointment.id})" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium">
+                        Marcar como completada
+                    </button>
+                    <button onclick="cancelAppointment(${appointment.id})" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
+                        Cancelar
+                    </button>
+                `
+                    : '';
+
+            return `
+                <div class="appointment-card bg-white rounded-lg shadow-sm p-6 border border-gray-200" data-status="${appointment.status}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${appointment.patient}</h3>
+                            <span class="badge ${statusBadgeClass[appointment.status]}">${statusLabels[appointment.status]}</span>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold mb-1">Fecha:</p>
+                            <div class="flex items-center text-gray-700">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="text-sm font-medium">${formatDate(appointment.date)}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold mb-1">Hora:</p>
+                            <div class="flex items-center text-gray-700">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="text-sm font-medium">${appointment.time}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold mb-1">Motivo:</p>
+                            <p class="text-sm text-gray-700 font-medium">${appointment.reason}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        ${actions}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update counts
+        function updateCounts() {
+            const pendientes = appointments.filter(a => a.status === 'pendientes').length;
+            const confirmadas = appointments.filter(a => a.status === 'confirmadas').length;
+            const completadas = appointments.filter(a => a.status === 'completadas').length;
+            const canceladas = appointments.filter(a => a.status === 'canceladas').length;
+
+            document.getElementById('count-pendientes').textContent = pendientes;
+            document.getElementById('count-confirmadas').textContent = confirmadas;
+            document.getElementById('count-completadas').textContent = completadas;
+            document.getElementById('count-canceladas').textContent = canceladas;
+        }
+
+        // Load appointments
+        function loadAppointments() {
+            const list = document.getElementById('appointmentsList');
+            list.innerHTML = appointments.map(app => createAppointmentCard(app)).join('');
+            filterByStatus(currentStatusFilter);
+            updateCounts();
+        }
+
+        // Filter by status
+        function filterByStatus(status) {
+            currentStatusFilter = status;
+            const cards = document.querySelectorAll('.appointment-card');
+            let visibleCount = 0;
+
+            // Update filter buttons
+            document.querySelectorAll('.status-filter').forEach(btn => {
+                btn.classList.remove('bg-gray-100', 'bg-black', 'text-white');
+            });
+            document.getElementById(`filter-${status}`).classList.add('bg-gray-100');
+
+            // Filter cards
+            cards.forEach(card => {
+                const cardStatus = card.getAttribute('data-status');
+                if (cardStatus === status) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show/hide empty state
+            document.getElementById('emptyState').classList.toggle('hidden', visibleCount > 0);
+        }
+
+        // Confirm appointment
+        function confirmAppointment(id) {
+            const appointment = appointments.find(a => a.id === id);
+            if (appointment) {
+                appointment.status = 'confirmadas';
+                loadAppointments();
+                alert('Cita confirmada exitosamente');
+            }
+        }
+
+        // Complete appointment
+        function completeAppointment(id) {
+            const appointment = appointments.find(a => a.id === id);
+            if (appointment) {
+                appointment.status = 'completadas';
+                loadAppointments();
+                alert('Cita marcada como completada');
+            }
+        }
+
+        // Cancel appointment
+        function cancelAppointment(id) {
+            if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+                const appointment = appointments.find(a => a.id === id);
+                if (appointment) {
+                    appointment.status = 'canceladas';
+                    loadAppointments();
+                    alert('Cita cancelada');
+                }
+            }
+        }
+
+        // Initialize
+        loadAppointments();
+
+        function updateStatistics() {
+            const total = appointments.length;
+            const uniqueClients = new Set(appointments.map(a => a.patient)).size;
+            const completed = appointments.filter(a => a.status === 'completadas').length;
+            const pending = appointments.filter(a => a.status === 'pendientes').length;
+            const confirmed = appointments.filter(a => a.status === 'confirmadas').length;
+            const cancelled = appointments.filter(a => a.status === 'canceladas').length;
+            const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            // Update top row stats
+            document.getElementById('stats-total-citas').textContent = total;
+            document.getElementById('stats-clientes-unicos').textContent = uniqueClients;
+            document.getElementById('stats-tasa-completitud').textContent = `${completionRate}%`;
+
+            // Update status cards
+            document.getElementById('stats-pendientes').textContent = pending;
+            document.getElementById('stats-confirmadas').textContent = confirmed;
+            document.getElementById('stats-completadas').textContent = completed;
+            document.getElementById('stats-canceladas').textContent = cancelled;
+
+            // Update summary
+            document.getElementById('stats-resumen-completadas').textContent = `${completed} de ${total}`;
+            document.getElementById('stats-resumen-estado').textContent = `${pending} pendientes, ${confirmed} confirmadas`;
+            document.getElementById('stats-resumen-total').textContent = `${total} citas`;
+        }
+
+        // Modify your loadAppointments function to include statistics update
+        function loadAppointments() {
+            const list = document.getElementById('appointmentsList');
+            list.innerHTML = appointments.map(app => createAppointmentCard(app)).join('');
+            filterByStatus(currentStatusFilter);
+            updateCounts();
+            updateStatistics(); // Add this line
+        }
+
+        // Función para generar todas las franjas horarias
+        function generateTimeSlots() {
+            const timeSlots = document.getElementById('timeSlots');
+            timeSlots.innerHTML = ''; // Limpiar el contenido existente
+
+            // Generar slots desde 6:00 AM hasta 6:00 PM
+            for (let hour = 6; hour <= 18; hour++) {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'grid grid-cols-8 divide-x';
+
+                // Formato de hora
+                const timeString = hour.toString().padStart(2, '0') + ':00';
+                const displayTime = `${hour === 12 ? '12:00' : (hour > 12 ? (hour - 12).toString() : hour.toString())}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
+
+                // Crear la celda de hora
+                let slotHTML = `
+            <div class="py-4 px-6 border-r bg-gray-50">
+                <span class="text-sm text-gray-500">${displayTime}</span>
+            </div>
+        `;
+
+                // Agregar celdas para cada día
+                for (let day = 1; day <= 7; day++) {
+                    const isWeekend = day > 5;
+                    if (isWeekend) {
+                        slotHTML += `
+                    <div class="p-2 border-r bg-gray-50"></div>
+                `;
+                    } else {
+                        slotHTML += `
+                    <div class="p-2 border-r hover:bg-blue-50 cursor-pointer">
+                        <div class="h-full rounded-lg border-2 border-dashed border-blue-200 hover:border-blue-400 flex items-center justify-center">
+                            <span class="text-xs text-blue-600 font-medium">Disponible</span>
+                        </div>
+                    </div>
+                `;
+                    }
+                }
+
+                timeSlot.innerHTML = slotHTML;
+                timeSlots.appendChild(timeSlot);
+            }
+        }
+
+        // Función para inicializar el calendario
+        function initializeSchedule() {
+            // Actualizar las fechas en la cabecera
+            updateHeaderDates();
+            // Generar las franjas horarias
+            generateTimeSlots();
+            // Agregar eventos click a las celdas disponibles
+            addSlotClickHandlers();
+        }
+
+        // Función para actualizar las fechas en la cabecera
+        function updateHeaderDates() {
+            const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            const currentDate = new Date('2025-10-24'); // Usando la fecha proporcionada
+
+            // Encontrar el lunes de la semana actual
+            const monday = new Date(currentDate);
+            monday.setDate(currentDate.getDate() - (currentDate.getDay() - 1));
+
+            const headerCells = document.querySelectorAll('.grid.grid-cols-8 > div:not(:first-child)');
+            headerCells.forEach((cell, index) => {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + index);
+
+                const daySpan = cell.querySelector('span:first-child');
+                const dateSpan = cell.querySelector('span:last-child');
+
+                if (daySpan && dateSpan) {
+                    daySpan.textContent = days[index];
+                    dateSpan.textContent = date.getDate() + ' Oct';
+                }
+            });
+        }
+
+        // Función para manejar clics en las celdas
+        function addSlotClickHandlers() {
+            const slots = document.querySelectorAll('.hover\\:bg-blue-50');
+            slots.forEach(slot => {
+                slot.addEventListener('click', function () {
+                    const currentStatus = this.querySelector('.border-dashed') ? 'available' : 'blocked';
+                    if (currentStatus === 'available') {
+                        this.innerHTML = `
+                    <div class="h-full rounded-lg bg-gray-100 flex items-center justify-center">
+                        <span class="text-xs text-gray-600 font-medium">Bloqueado</span>
+                    </div>
+                `;
+                    } else {
+                        this.innerHTML = `
+                    <div class="h-full rounded-lg border-2 border-dashed border-blue-200 hover:border-blue-400 flex items-center justify-center">
+                        <span class="text-xs text-blue-600 font-medium">Disponible</span>
+                    </div>
+                `;
+                    }
+                });
+            });
+        }
+
+        // Actualizar los selectores de hora en la configuración
+        function updateTimeSelectors() {
+            const startTimeSelect = document.querySelector('select[class*="hora-inicio"]');
+            const endTimeSelect = document.querySelector('select[class*="hora-fin"]');
+
+            if (startTimeSelect && endTimeSelect) {
+                startTimeSelect.innerHTML = '';
+                endTimeSelect.innerHTML = '';
+
+                for (let hour = 6; hour <= 18; hour++) {
+                    const timeString = `${hour.toString().padStart(2, '0')}:00`;
+                    const displayTime = `${hour === 12 ? '12:00' : (hour > 12 ? (hour - 12).toString() : hour.toString())}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
+
+                    startTimeSelect.innerHTML += `<option value="${timeString}">${displayTime}</option>`;
+                    endTimeSelect.innerHTML += `<option value="${timeString}">${displayTime}</option>`;
+                }
+
+                // Establecer valores predeterminados
+                startTimeSelect.value = '06:00';
+                endTimeSelect.value = '18:00';
+            }
+        }
+
+        // Inicializar todo cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeSchedule();
+            updateTimeSelectors();
+        });
+
+        // Desde aqui empieza
+        const AppState = {
+            currentUser: {
+                login: 'AndreaRuizP',
+                name: 'Andrea Ruiz',
+                specialty: 'Odontología',
+                timezone: 'UTC-5'
+            },
+            currentDate: new Date('2025-10-24T18:05:08Z'),
+            schedule: {
+                workDays: [1, 2, 3, 4, 5],
+                workHours: {
+                    start: 6,
+                    end: 18
+                },
+                appointmentDuration: 45,
+                appointmentInterval: 15,
+                simultaneousAppointments: 1
+            },
+            appointments: [],
+            slotStates: {
+                AVAILABLE: 'available',
+                BUSY: 'busy',
+                BLOCKED: 'blocked'
+            }
+        };
+
+        // Función para formatear la hora en formato 12 horas
+        function formatTime(hour) {
+            const period = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+            return `${displayHour}:00 ${period}`;
+        }
+
+        // Función para obtener el rango de fechas de la semana actual
+        function getCurrentWeekDates() {
+            const curr = new Date(AppState.currentDate);
+            const week = [];
+
+            // Encontrar el lunes de la semana actual
+            const first = curr.getDate() - curr.getDay() + 1;
+
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(curr.setDate(first + i));
+                week.push({
+                    date: day,
+                    dayName: new Intl.DateTimeFormat('es-ES', { weekday: 'long' }).format(day),
+                    dayNumber: day.getDate(),
+                    month: new Intl.DateTimeFormat('es-ES', { month: 'short' }).format(day)
+                });
+            }
+
+            return week;
+        }
+
+        // Función para generar las franjas horarias
+        function generateTimeSlots() {
+            const timeSlots = document.getElementById('timeSlots');
+            const weekDates = getCurrentWeekDates();
+            timeSlots.innerHTML = '';
+
+            for (let hour = AppState.schedule.workHours.start; hour <= AppState.schedule.workHours.end; hour++) {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'grid grid-cols-8 divide-x';
+
+                let slotHTML = `
+            <div class="py-4 px-6 border-r bg-gray-50">
+                <span class="text-sm text-gray-500">${formatTime(hour)}</span>
+            </div>
+        `;
+
+                weekDates.forEach((day, index) => {
+                    const isWorkDay = AppState.schedule.workDays.includes(index + 1);
+                    const slotDate = new Date(day.date);
+                    slotDate.setHours(hour, 0, 0, 0);
+
+                    const slotId = `slot-${slotDate.toISOString()}`;
+
+                    if (!isWorkDay) {
+                        slotHTML += `
+                    <div class="p-2 border-r bg-gray-50"></div>
+                `;
+                    } else {
+                        const appointment = AppState.appointments.find(apt =>
+                            apt.date.getTime() === slotDate.getTime()
+                        );
+                        let style;
+
+                        switch (appointment?.status) {
+                            case AppState.slotStates.BUSY:
+                                style = {
+                                    containerClass: 'bg-yellow-100',
+                                    textClass: 'text-yellow-800',
+                                    text: 'Ocupado'
+                                };
+                                break;
+                            case AppState.slotStates.BLOCKED:
+                                style = {
+                                    containerClass: 'bg-gray-100',
+                                    textClass: 'text-gray-600',
+                                    text: 'Bloqueado'
+                                };
+                                break;
+                            default:
+                                style = {
+                                    containerClass: 'border-2 border-dashed border-blue-200 hover:border-blue-400',
+                                    textClass: 'text-blue-600',
+                                    text: 'Disponible'
+                                };
+                        }
+
+                        slotHTML += `
+                    <div class="p-2 border-r hover:bg-blue-50 cursor-pointer" 
+                         data-slot-id="${slotId}"
+                         data-state="${appointment?.status || AppState.slotStates.AVAILABLE}">
+                        <div class="h-full rounded-lg ${style.containerClass} flex items-center justify-center">
+                            <span class="text-xs ${style.textClass} font-medium">${style.text}</span>
+                        </div>
+                    </div>
+                `;
+                    }
+                });
+
+                timeSlot.innerHTML = slotHTML;
+                timeSlots.appendChild(timeSlot);
+            }
+
+            addSlotClickHandlers();
+        }
+
+        // Función para verificar disponibilidad
+        function checkAvailability(date) {
+            const appointment = AppState.appointments.find(apt =>
+                apt.date.getTime() === date.getTime()
+            );
+            return !appointment || appointment.status === AppState.slotStates.AVAILABLE;
+        }
+
+        // Función para actualizar la cabecera del calendario
+        function updateCalendarHeader() {
+            const weekDates = getCurrentWeekDates();
+            const headerCells = document.querySelectorAll('.grid.grid-cols-8 > div:not(:first-child)');
+
+            headerCells.forEach((cell, index) => {
+                const dayData = weekDates[index];
+                const daySpan = cell.querySelector('span:first-child');
+                const dateSpan = cell.querySelector('span:last-child');
+
+                if (daySpan && dateSpan) {
+                    daySpan.textContent = dayData.dayName;
+                    dateSpan.textContent = `${dayData.dayNumber} ${dayData.month}`;
+                }
+            });
+        }
+
+        // Función para manejar los clics en los slots
+        function addSlotClickHandlers() {
+            const slots = document.querySelectorAll('[data-slot-id]');
+            slots.forEach(slot => {
+                slot.addEventListener('click', function () {
+                    const slotId = this.dataset.slotId;
+                    const slotDate = new Date(slotId.replace('slot-', ''));
+                    toggleSlotAvailability(this, slotDate);
+                });
+            });
+        }
+
+        // La función toggleSlotAvailability modificada
+        function toggleSlotAvailability(slotElement, date) {
+            const currentState = slotElement.getAttribute('data-state') || AppState.slotStates.AVAILABLE;
+            let newState, style;
+
+            // Rotación entre estados: Disponible -> Ocupado -> Bloqueado
+            switch (currentState) {
+                case AppState.slotStates.AVAILABLE:
+                    newState = AppState.slotStates.BUSY;
+                    style = {
+                        containerClass: 'bg-green-100',
+                        textClass: 'text-green-800',
+                        text: 'Ocupado'
+                    };
+                    break;
+                case AppState.slotStates.BUSY:
+                    newState = AppState.slotStates.BLOCKED;
+                    style = {
+                        containerClass: 'bg-gray-100',
+                        textClass: 'text-gray-600',
+                        text: 'Bloqueado'
+                    };
+                    break;
+                case AppState.slotStates.BLOCKED:
+                    newState = AppState.slotStates.AVAILABLE;
+                    style = {
+                        containerClass: 'border-2 border-dashed border-blue-200 hover:border-blue-400',
+                        textClass: 'text-blue-600',
+                        text: 'Disponible'
+                    };
+                    break;
+                default:
+                    newState = AppState.slotStates.AVAILABLE;
+                    style = {
+                        containerClass: 'border-2 border-dashed border-blue-200 hover:border-blue-400',
+                        textClass: 'text-blue-600',
+                        text: 'Disponible'
+                    };
+            }
+
+            // Actualizar el estado en el elemento
+            slotElement.setAttribute('data-state', newState);
+
+            // Actualizar el HTML del slot
+            slotElement.innerHTML = `
+        <div class="h-full rounded-lg ${style.containerClass} flex items-center justify-center">
+            <span class="text-xs ${style.textClass} font-medium">${style.text}</span>
+        </div>
+    `;
+
+            // Actualizar el estado en AppState
+            if (newState === AppState.slotStates.AVAILABLE) {
+                AppState.appointments = AppState.appointments.filter(apt =>
+                    apt.date.getTime() !== date.getTime()
+                );
+            } else {
+                const existingAppointment = AppState.appointments.find(apt =>
+                    apt.date.getTime() === date.getTime()
+                );
+                if (existingAppointment) {
+                    existingAppointment.status = newState;
+                } else {
+                    AppState.appointments.push({ date: date, status: newState });
+                }
+            }
+        }
+
+        // Función para guardar cambios
+        function saveChanges() {
+            alert('Cambios guardados correctamente');
+        }
+
+        // Función para restaurar horario
+        function resetSchedule() {
+            if (confirm('¿Estás seguro de que deseas restaurar el horario? Se perderán todos los cambios.')) {
+                AppState.appointments = [];
+                generateTimeSlots();
+            }
+        }
+
+        // Función para inicializar la aplicación
+        function initializeApp() {
+            // Actualizar información del usuario
+            document.querySelector('.text-sm.font-semibold').textContent = AppState.currentUser.name;
+            document.querySelector('.text-xs.bg-blue-500').textContent = AppState.currentUser.specialty;
+
+            // Actualizar cabecera del calendario
+            updateCalendarHeader();
+
+            // Generar slots de tiempo
+            generateTimeSlots();
+
+            // Configurar event listeners
+            document.getElementById('saveChanges').addEventListener('click', saveChanges);
+            document.getElementById('resetSchedule').addEventListener('click', resetSchedule);
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+
+</html>
