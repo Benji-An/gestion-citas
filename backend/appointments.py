@@ -10,6 +10,7 @@ appointments_bp = Blueprint('appointments', __name__)
 @appointments_bp.route('/create', methods=['POST'])
 def create_appointment():
     data = request.get_json()
+    print('[appointments.create] payload:', data)
     user_id = data.get('user_id')
     professional_id = data.get('professional_id')
     date_time = data.get('date_time')
@@ -31,9 +32,13 @@ def create_appointment():
     try:
         with conn.cursor() as cur:
             # allow date_time to be NULL if not provided
-            cur.execute('INSERT INTO appointments (user_id, professional_id, date_time, notes, created_at) VALUES (%s,%s,%s,%s,NOW())', (user_id, professional_id, date_time if date_time else None, notes))
-            appointment_id = cur.lastrowid
-            return jsonify({'success': True, 'appointment_id': appointment_id})
+            try:
+                cur.execute('INSERT INTO appointments (user_id, professional_id, date_time, notes, created_at) VALUES (%s,%s,%s,%s,NOW())', (user_id, professional_id, date_time if date_time else None, notes))
+                appointment_id = cur.lastrowid
+                return jsonify({'success': True, 'appointment_id': appointment_id})
+            except Exception as ie:
+                print('[appointments.create] DB error:', ie)
+                return jsonify({'error': 'DB error', 'details': str(ie)}), 500
     finally:
         conn.close()
 
@@ -41,6 +46,7 @@ def create_appointment():
 @appointments_bp.route('/reschedule', methods=['POST'])
 def reschedule_appointment():
     data = request.get_json() or {}
+    print('[appointments.reschedule] payload:', data)
     appointment_id = data.get('appointment_id')
     new_date_time = data.get('date_time')
 
@@ -68,9 +74,13 @@ def reschedule_appointment():
                 if int(row.get('user_id')) != int(user_id):
                     return jsonify({'error': 'No permission to modify this appointment'}), 403
 
-            cur.execute('UPDATE appointments SET date_time = %s, status = %s WHERE id = %s', (new_date_time, 'proximas', appointment_id))
-            conn.commit()
-            return jsonify({'success': True, 'appointment_id': appointment_id})
+            try:
+                cur.execute('UPDATE appointments SET date_time = %s, status = %s WHERE id = %s', (new_date_time, 'proximas', appointment_id))
+                conn.commit()
+                return jsonify({'success': True, 'appointment_id': appointment_id})
+            except Exception as ie:
+                print('[appointments.reschedule] DB error:', ie)
+                return jsonify({'error': 'DB error', 'details': str(ie)}), 500
     finally:
         conn.close()
 
@@ -78,6 +88,7 @@ def reschedule_appointment():
 @appointments_bp.route('/cancel', methods=['POST'])
 def cancel_appointment():
     data = request.get_json() or {}
+    print('[appointments.cancel] payload:', data)
     appointment_id = data.get('appointment_id')
 
     if not appointment_id:
@@ -104,9 +115,13 @@ def cancel_appointment():
                 if int(row.get('user_id')) != int(user_id):
                     return jsonify({'error': 'No permission to cancel this appointment'}), 403
 
-            cur.execute('UPDATE appointments SET status = %s WHERE id = %s', ('canceladas', appointment_id))
-            conn.commit()
-            return jsonify({'success': True, 'appointment_id': appointment_id})
+            try:
+                cur.execute('UPDATE appointments SET status = %s WHERE id = %s', ('canceladas', appointment_id))
+                conn.commit()
+                return jsonify({'success': True, 'appointment_id': appointment_id})
+            except Exception as ie:
+                print('[appointments.cancel] DB error:', ie)
+                return jsonify({'error': 'DB error', 'details': str(ie)}), 500
     finally:
         conn.close()
 

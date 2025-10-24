@@ -10,7 +10,6 @@
     <link rel="icon" type="image/x-icon" href="../../public/logo4.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="../js/loadComponents.js"></script>
 </head>
 
 <body>
@@ -815,8 +814,10 @@
 
         async function loadProfessionals() {
             const grid = document.getElementById('professionalsGrid');
+            console.debug('[loadProfessionals] start, grid found?', !!grid);
             try {
                 const res = await apiFetch('/auth/professionals');
+                console.debug('[loadProfessionals] backend response:', res);
                 if (res && res.data) {
                     const profs = res.data.map(p => ({
                         id: p.id,
@@ -832,7 +833,26 @@
             } catch (e) {
                 console.warn('No se pudieron cargar profesionales desde backend, usando datos locales', e);
             }
-            grid.innerHTML = SAMPLE_PROFESSIONALS.map(prof => createProfessionalCard(prof)).join('');
+            const html = SAMPLE_PROFESSIONALS.map(prof => createProfessionalCard(prof)).join('');
+            console.debug('[loadProfessionals] using SAMPLE_PROFESSIONALS length=', SAMPLE_PROFESSIONALS.length, 'html length=', html.length);
+            grid.innerHTML = html;
+        }
+
+        // Utility: fetch wrapper that injects Authorization header from localStorage
+        async function apiFetch(path, options = {}) {
+            const BASE = 'http://localhost:5000';
+            const token = localStorage.getItem('api_token');
+            options.headers = options.headers || {};
+            if (token) options.headers['Authorization'] = 'Bearer ' + token;
+            const res = await fetch(BASE + path, options);
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await res.json();
+                if (!res.ok) throw { status: res.status, body: data };
+                return data;
+            }
+            if (!res.ok) throw { status: res.status, body: null };
+            return null;
         }
 
         function filterProfessionals() {
