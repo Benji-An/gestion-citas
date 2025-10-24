@@ -220,10 +220,47 @@
             <p class="text-gray-500 text-lg">No hay historias médicas disponibles</p>
         </div>
     </main>
+
+    <!-- Modal: Agendar Cita -->
+    <div id="scheduleModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-xl mx-4">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold">Agendar cita con <span id="modalProfessionalName"></span></h3>
+                <button onclick="closeScheduleModal()" class="text-gray-600 hover:text-gray-800">✕</button>
+            </div>
+            <div class="p-6">
+                <input type="hidden" id="modalProfessionalId" value="">
+                <input type="hidden" id="modalAppointmentId" value="">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                        <input id="modalDate" type="date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                        <input id="modalTime" type="time" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Motivo</label>
+                    <textarea id="modalReason" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Breve motivo de la consulta"></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeScheduleModal()" class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                    <button onclick="submitScheduleModal()" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">Confirmar cita</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 flex flex-col gap-3 z-50"></div>
+
     <script>
-        // Sample data - profesionales
-        const professionals = [
+        // Sample data - profesionales (fallback local)
+        const SAMPLE_PROFESSIONALS = [
             {
+                id: 0,
                 name: "Andrea Ruiz",
                 specialty: "Odontología",
                 specialtyKey: "odontologia",
@@ -232,6 +269,7 @@
                 reviews: 127
             },
             {
+                id: 1,
                 name: "Carlos Mendoza",
                 specialty: "Medicina General",
                 specialtyKey: "medicina",
@@ -240,38 +278,35 @@
                 reviews: 203
             },
             {
+                id: 2,
                 name: "Laura Gómez",
                 specialty: "Psicología",
                 specialtyKey: "psicologia",
                 description: "Psicóloga clínica con enfoque en terapia cognitivo-conductual y manejo de ansiedad.",
                 rating: 4.7,
                 reviews: 89
-            },
-            {
-                name: "Roberto Silva",
-                specialty: "Fisioterapia",
-                specialtyKey: "fisioterapia",
-                description: "Fisioterapeuta deportivo especializado en rehabilitación y prevención de lesiones.",
-                rating: 4.6,
-                reviews: 145
-            },
-            {
-                name: "María Fernández",
-                specialty: "Nutrición",
-                specialtyKey: "nutricion",
-                description: "Nutricionista certificada en planes alimenticios personalizados y control de peso.",
-                rating: 4.9,
-                reviews: 178
-            },
-            {
-                name: "José Ramírez",
-                specialty: "Cardiología",
-                specialtyKey: "cardiologia",
-                description: "Cardiólogo con especialización en prevención cardiovascular y ecocardiografía.",
-                rating: 4.8,
-                reviews: 156
             }
         ];
+
+            // Toast utility: show non-blocking notifications
+            function showToast(message, type = 'info', duration = 4000) {
+                const container = document.getElementById('toastContainer');
+                if (!container) return alert(message);
+                const toast = document.createElement('div');
+                const base = 'text-white px-4 py-2 rounded shadow-lg flex items-center justify-between max-w-sm';
+                const color = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-gray-800';
+                toast.className = `${base} ${color}`;
+                const text = document.createElement('div');
+                text.textContent = message;
+                const btn = document.createElement('button');
+                btn.className = 'ml-4 opacity-90 hover:opacity-100 text-lg leading-none';
+                btn.innerHTML = '✕';
+                btn.onclick = () => { if (container.contains(toast)) container.removeChild(toast); };
+                toast.appendChild(text);
+                toast.appendChild(btn);
+                container.appendChild(toast);
+                setTimeout(() => { if (container.contains(toast)) container.removeChild(toast); }, duration);
+            }
 
         // Sample data - citas
         const appointments = [
@@ -365,7 +400,9 @@
             // Puedes agregar más historias médicas aquí
         ];
 
-        let currentFilter = 'todas';
+    let currentFilter = 'todas';
+    // scheduleMode: 'create' or 'reschedule'
+    let scheduleMode = 'create';
 
         // Show section
         function showSection(section) {
@@ -406,28 +443,29 @@
             }
         }
 
-        // Function to create professional card
+        // Function to create professional card (renders data-* attributes and uses id)
         function createProfessionalCard(professional) {
+            const safeName = (professional.name || '').replace(/'/g, "\\'");
             return `
-                <div class="card-professional bg-white rounded-lg shadow-sm p-6">
+                <div class="card-professional bg-white rounded-lg shadow-sm p-6" data-name="${(professional.name||'').toLowerCase()}" data-specialty="${(professional.specialty||'').toLowerCase()}" data-id="${professional.id}">
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <h3 class="text-xl font-semibold text-gray-900">${professional.name}</h3>
-                            <span class="badge-specialty">${professional.specialty}</span>
+                            <span class="badge-specialty">${professional.specialty || ''}</span>
                         </div>
                     </div>
-                    <p class="text-gray-600 mb-4 line-clamp-2">${professional.description}</p>
+                    <p class="text-gray-600 mb-4 line-clamp-2">${professional.description || ''}</p>
                     <div class="flex items-center mb-4">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                             </svg>
-                            <span class="ml-1 text-gray-600">${professional.rating}</span>
+                            <span class="ml-1 text-gray-600">${professional.rating || '4.8'}</span>
                             <span class="mx-2 text-gray-400">•</span>
-                            <span class="text-gray-600">${professional.reviews} reseñas</span>
+                            <span class="text-gray-600">${professional.reviews || 0} reseñas</span>
                         </div>
                     </div>
-                    <button onclick="scheduleAppointment('${professional.name}')" 
+            <button onclick="openScheduleModal(${professional.id}, '${safeName}')" 
                             class="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -462,7 +500,7 @@
                     </button>
                 `
                 : appointment.status === 'completadas'
-                ? `<button onclick="scheduleAppointment('${appointment.professional}')" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium">Agendar de nuevo</button>`
+                ? `<button onclick="showToast('Funcionalidad próximamente','info')" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium">Agendar de nuevo</button>`
                 : '';
 
             return `
@@ -474,30 +512,30 @@
                         </div>
                         ${statusBadges[appointment.status]}
                     </div>
-                    <div class="grid md:grid-cols-3 gap-3 mb-3">
-                        <div>
-                            <p class="text-xs text-gray-500 font-semibold mb-1">Fecha:</p>
-                            <div class="flex items-center text-gray-700">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                <span class="text-sm font-medium">${formatDate(appointment.date)}</span>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500 font-semibold mb-1">Hora:</p>
-                            <div class="flex items-center text-gray-700">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <span class="text-sm font-medium">${appointment.time}</span>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500 font-semibold mb-1">Motivo:</p>
-                            <p class="text-sm text-gray-700 font-medium">${appointment.reason}</p>
-                        </div>
-                    </div>
+                            <div class="grid md:grid-cols-3 gap-3 mb-3">
+                                        <div>
+                                            <p class="text-xs text-gray-500 font-semibold mb-1">Fecha:</p>
+                                            <div class="flex items-center text-gray-700">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                                </svg>
+                                                <span class="text-sm font-medium">${formatDate(appointment.date)}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 font-semibold mb-1">Hora:</p>
+                                            <div class="flex items-center text-gray-700">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                <span class="text-sm font-medium">${formatTime(appointment.time)}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 font-semibold mb-1">Motivo:</p>
+                                            <p class="text-sm text-gray-700 font-medium">${appointment.reason}</p>
+                                        </div>
+                                    </div>
                     <div class="flex gap-2 flex-wrap">
                         ${actions}
                     </div>
@@ -505,11 +543,145 @@
             `;
         }
 
-        // Fecha en formato legible
+        // Fecha en formato legible (maneja YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, ISO y más)
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            return date.toLocaleDateString('es-ES', options);
+            if (!dateString) return 'Fecha no disponible';
+            let ds = String(dateString).trim();
+            // If full datetime like 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DDTHH:MM:SS' extract date part
+            const dateMatch = ds.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const isoDate = dateMatch[1];
+                try {
+                    // Create a Date from the ISO date to format it nicely
+                    const d = new Date(isoDate + 'T00:00:00');
+                    if (!isNaN(d)) {
+                        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                        return d.toLocaleDateString('es-ES', options);
+                    }
+                } catch (e) {
+                    // fall through
+                }
+            }
+            // Fallback: try to parse the whole string by converting space to T
+            const tryIso = ds.replace(' ', 'T');
+            const date = new Date(tryIso);
+            if (!isNaN(date)) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('es-ES', options);
+            }
+            return 'Fecha inválida';
+        }
+
+        // Devuelve hora en formato HH:MM (24h). Acepta AM/PM y diferentes formatos.
+        function formatTime(timeString) {
+            if (!timeString) return '';
+            const ts = String(timeString).trim();
+            // If contains AM/PM or other variants, normalize first
+            const normalized = normalizeTimeString(ts);
+            if (normalized) return normalized;
+            // If the input is a datetime like 'YYYY-MM-DD HH:MM:SS'
+            const m = ts.match(/\d{4}-\d{2}-\d{2}[ T](\d{1,2}:\d{2})(?::\d{2})?/);
+            if (m) return normalizeTimeString(m[1]) || '';
+            // As a last resort, try to extract HH:MM pattern
+            const hm = ts.match(/(\d{1,2}:\d{2})/);
+            if (hm) return normalizeTimeString(hm[1]) || '';
+            return '';
+        }
+
+        // Parse a variety of date/time representations and return {date: 'YYYY-MM-DD', time: 'HH:MM'}
+        function parseDateTime(val) {
+            if (!val && val !== 0) return { date: '', time: '' };
+
+            // If it's already an object (possible server-side structured value), try common shapes
+            if (typeof val === 'object') {
+                // Example: { date: '2025-10-25', time: '10:00:00' }
+                if (val.date && typeof val.date === 'string') {
+                    const time = val.time || val.time_of_day || '';
+                    return { date: (val.date || '').slice(0, 10), time: (time || '').slice(0,5) };
+                }
+                // If it's a JS Date
+                if (val instanceof Date) {
+                    const y = val.getFullYear();
+                    const mo = String(val.getMonth() + 1).padStart(2, '0');
+                    const da = String(val.getDate()).padStart(2, '0');
+                    const hh = String(val.getHours()).padStart(2, '0');
+                    const mm = String(val.getMinutes()).padStart(2, '0');
+                    return { date: `${y}-${mo}-${da}`, time: `${hh}:${mm}` };
+                }
+            }
+
+            // If it's a number, consider it epoch (seconds or milliseconds)
+            if (typeof val === 'number') {
+                let ts = val;
+                if (ts < 1e12) ts = ts * 1000; // seconds -> ms
+                const d = new Date(ts);
+                if (!isNaN(d)) {
+                    const y = d.getFullYear();
+                    const mo = String(d.getMonth() + 1).padStart(2, '0');
+                    const da = String(d.getDate()).padStart(2, '0');
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const mm = String(d.getMinutes()).padStart(2, '0');
+                    return { date: `${y}-${mo}-${da}`, time: `${hh}:${mm}` };
+                }
+            }
+
+            // String handling
+            const s = String(val).trim();
+            if (!s || s.startsWith('0000-00-00')) return { date: '', time: '' };
+
+            // .NET /Date(1234567890)/ format
+            const msMatch = s.match(/\/Date\((\d+)(?:[+-]\d+)?\)\//);
+            if (msMatch) {
+                const d = new Date(Number(msMatch[1]));
+                if (!isNaN(d)) return { date: d.toISOString().slice(0,10), time: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` };
+            }
+
+            // ISO or MySQL-like strings: try to extract YYYY-MM-DD and optional HH:MM
+            const m = s.match(/(\d{4}-\d{2}-\d{2})(?:[ T](\d{1,2}:\d{2})(?::\d{2})?)?/);
+            if (m) {
+                const datePart = m[1];
+                const timePart = m[2] || '';
+                return { date: datePart, time: timePart ? normalizeTimeString(timePart) : '' };
+            }
+
+            // Try parsing as full Date string
+            const parsed = new Date(s.replace(' ', 'T'));
+            if (!isNaN(parsed)) {
+                const y = parsed.getFullYear();
+                const mo = String(parsed.getMonth() + 1).padStart(2, '0');
+                const da = String(parsed.getDate()).padStart(2, '0');
+                const hh = String(parsed.getHours()).padStart(2, '0');
+                const mm = String(parsed.getMinutes()).padStart(2, '0');
+                return { date: `${y}-${mo}-${da}`, time: `${hh}:${mm}` };
+            }
+
+            // Nothing matched
+            return { date: '', time: '' };
+        }
+
+        // Normalize different time formats to HH:MM (24h)
+        function normalizeTimeString(ts) {
+            if (!ts) return '';
+            ts = (ts + '').trim();
+            // If contains AM/PM, parse and convert
+            const ampmMatch = ts.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
+            if (ampmMatch) {
+                let hh = parseInt(ampmMatch[1], 10);
+                const mm = (ampmMatch[2] || '00').padStart(2, '0');
+                const isPM = /PM/i.test(ampmMatch[3]);
+                if (hh === 12) hh = isPM ? 12 : 0;
+                else if (isPM) hh += 12;
+                return String(hh).padStart(2, '0') + ':' + mm;
+            }
+            // If format HH:MM[:SS]
+            const hms = ts.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+            if (hms) {
+                return hms[1].padStart(2, '0') + ':' + hms[2];
+            }
+            // If only hour '9' or '09'
+            const hOnly = ts.match(/^(\d{1,2})$/);
+            if (hOnly) return hOnly[1].padStart(2, '0') + ':00';
+            return '';
         }
 
         // Actualizar contadores de citas
@@ -560,24 +732,71 @@
         }
 
         function rescheduleAppointment(id) {
-            alert(`Reprogramando cita #${id}...\n\nEn la versión final, esto abrirá un calendario para seleccionar nueva fecha.`);
+            // Find appointment and open modal in reschedule mode
+            const appointment = appointments.find(a => a.id === id);
+            if (!appointment) {
+                showToast('Cita no encontrada', 'error');
+                return;
+            }
+            scheduleMode = 'reschedule';
+            const modal = document.getElementById('scheduleModal');
+            if (!modal) { showToast('Modal no disponible', 'error'); return; }
+            document.getElementById('modalAppointmentId').value = id;
+            // professional id may be available
+            if (appointment.professional_id) document.getElementById('modalProfessionalId').value = appointment.professional_id;
+            document.getElementById('modalProfessionalName').textContent = appointment.professional || '';
+            // Prefill date and time inputs
+            const dateInput = document.getElementById('modalDate');
+            const timeInput = document.getElementById('modalTime');
+            // appointment.date is expected to be YYYY-MM-DD or ISO
+            dateInput.value = appointment.date ? String(appointment.date).slice(0,10) : '';
+            timeInput.value = appointment.time ? (String(appointment.time).slice(0,5)) : '';
+            document.getElementById('modalReason').value = appointment.reason || '';
+            // set min date to today as before
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            dateInput.min = `${yyyy}-${mm}-${dd}`;
+            modal.classList.remove('hidden');
+            dateInput.focus();
         }
 
-        function cancelAppointment(id) {
-            if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-                const appointment = appointments.find(a => a.id === id);
-                if (appointment) {
-                    appointment.status = 'canceladas';
-                    loadAppointments();
-                    updateCounts();
-                    alert('Cita cancelada exitosamente');
-                }
+        async function cancelAppointment(id) {
+            if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) return;
+            try {
+                const body = { appointment_id: id };
+                await apiFetch('/appointments/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                showToast('Cita cancelada exitosamente', 'success');
+                // reload from backend to keep UI in sync
+                await loadAppointmentsFromBackend();
+            } catch (err) {
+                console.error('Error cancelando cita:', err);
+                const msg = err && err.body && err.body.error ? err.body.error : 'No fue posible cancelar la cita';
+                showToast(msg, 'error');
             }
         }
 
-        function loadProfessionals() {
+        async function loadProfessionals() {
             const grid = document.getElementById('professionalsGrid');
-            grid.innerHTML = professionals.map(prof => createProfessionalCard(prof)).join('');
+            try {
+                const res = await apiFetch('/auth/professionals');
+                if (res && res.data) {
+                    const profs = res.data.map(p => ({
+                        id: p.id,
+                        name: p.name || p.email || 'Profesional',
+                        specialty: p.specialty || '',
+                        description: p.email ? `Contacto: ${p.email}` : '',
+                        rating: 4.8,
+                        reviews: 0
+                    }));
+                    grid.innerHTML = profs.map(prof => createProfessionalCard(prof)).join('');
+                    return;
+                }
+            } catch (e) {
+                console.warn('No se pudieron cargar profesionales desde backend, usando datos locales', e);
+            }
+            grid.innerHTML = SAMPLE_PROFESSIONALS.map(prof => createProfessionalCard(prof)).join('');
         }
 
         function filterProfessionals() {
@@ -604,8 +823,73 @@
             document.getElementById('noResults').classList.toggle('hidden', visibleCount > 0);
         }
 
-        function scheduleAppointment(professionalName) {
-            alert(`Agendando cita con ${professionalName}...\n\nEn la versión final, esto abrirá un calendario para seleccionar fecha y hora.`);
+        // Modal-based appointment scheduling (replaces prompt flow)
+        function openScheduleModal(professionalId, professionalName) {
+            const modal = document.getElementById('scheduleModal');
+            if (!modal) { showToast('Modal no disponible', 'error'); return; }
+            // Fill hidden fields and UI
+            document.getElementById('modalProfessionalId').value = professionalId;
+            document.getElementById('modalAppointmentId').value = '';
+            scheduleMode = 'create';
+            document.getElementById('modalProfessionalName').textContent = professionalName;
+            // set min date to today
+            const dateInput = document.getElementById('modalDate');
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            dateInput.min = `${yyyy}-${mm}-${dd}`;
+            dateInput.value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('modalTime').value = '';
+            document.getElementById('modalReason').value = '';
+            modal.classList.remove('hidden');
+            dateInput.focus();
+        }
+
+        function closeScheduleModal() {
+            const modal = document.getElementById('scheduleModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+        }
+
+        async function submitScheduleModal() {
+            const professionalId = document.getElementById('modalProfessionalId').value;
+            const date = document.getElementById('modalDate').value;
+            const time = document.getElementById('modalTime').value;
+            const reason = document.getElementById('modalReason').value.trim();
+            const appointmentId = document.getElementById('modalAppointmentId').value;
+
+            if (!professionalId) { showToast('Profesional no seleccionado', 'error'); return; }
+            if (!date) { showToast('Selecciona una fecha válida', 'error'); return; }
+            if (!time) { showToast('Selecciona una hora válida', 'error'); return; }
+            if (!reason) { showToast('Ingrese el motivo de la consulta', 'error'); return; }
+
+            // Build datetime 'YYYY-MM-DD HH:MM:SS'
+            const dateTime = `${date} ${time}:00`;
+
+            try {
+                if (scheduleMode === 'reschedule' && appointmentId) {
+                    const body = { appointment_id: Number(appointmentId), date_time: dateTime };
+                    await apiFetch('/appointments/reschedule', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    closeScheduleModal();
+                    scheduleMode = 'create';
+                    document.getElementById('modalAppointmentId').value = '';
+                    showToast('Cita reprogramada correctamente.', 'success');
+                    await loadAppointmentsFromBackend();
+                    showSection('citas');
+                } else {
+                    const body = { professional_id: Number(professionalId), date_time: dateTime, notes: reason };
+                    await apiFetch('/appointments/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    closeScheduleModal();
+                    showToast('Cita creada correctamente. Se actualizará la lista de tus citas.', 'success');
+                    await loadAppointmentsFromBackend();
+                    showSection('citas');
+                }
+            } catch (err) {
+                console.error('Error creando cita:', err);
+                const msg = err && err.body && err.body.message ? err.body.message : 'No fue posible crear la cita';
+                showToast(msg, 'error');
+            }
         }
 
         function createMedicalHistoryCard(history) {
@@ -684,7 +968,121 @@
             }
         }
 
-        loadProfessionals();
+        // Init: cargar header, perfil y datos desde el backend
+        async function apiFetch(path, options = {}) {
+            const BASE = 'http://localhost:5000';
+            const token = localStorage.getItem('api_token');
+            options.headers = options.headers || {};
+            if (token) options.headers['Authorization'] = 'Bearer ' + token;
+            const res = await fetch(BASE + path, options);
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await res.json();
+                if (!res.ok) throw { status: res.status, body: data };
+                return data;
+            }
+            if (!res.ok) throw { status: res.status, body: null };
+            return null;
+        }
+
+        async function init() {
+            // load header component (already wired in loadComponents.js via DOMContentLoaded)
+            const token = localStorage.getItem('api_token');
+            if (!token) {
+                // No token -> redirect to login
+                window.location.href = '/gestion-citas/index/login_usuario.html';
+                return;
+            }
+
+            try {
+                const me = await apiFetch('/auth/me');
+                if (me && me.user) {
+                    const name = me.user.name || me.user.email || 'Usuario';
+                    // Update header if present
+                    const headerNameEl = document.getElementById('userName');
+                    if (headerNameEl) headerNameEl.textContent = name;
+                    // store normalized keys for other pages
+                    localStorage.setItem('userName', name);
+                    localStorage.setItem('user_id', me.user.id);
+                }
+
+                // Load appointments from backend
+                await loadAppointmentsFromBackend();
+                // Load professionals list from backend (o fallback local)
+                await loadProfessionals();
+            } catch (err) {
+                console.error('Error init:', err);
+                // If token invalid, redirect to login
+                if (err && err.status === 401) {
+                    localStorage.removeItem('api_token');
+                    window.location.href = '/gestion-citas/index/login_usuario.html';
+                }
+            }
+        }
+
+        async function loadAppointmentsFromBackend() {
+            const userId = localStorage.getItem('user_id');
+            const BASE = 'http://localhost:5000';
+            let data = null;
+
+            // First try: authenticated request using apiFetch (adds token)
+            try {
+                if (userId) data = await apiFetch(`/appointments/list?user_id=${userId}`);
+                else data = await apiFetch('/appointments/list');
+            } catch (primaryErr) {
+                console.warn('apiFetch failed, attempting unauthenticated fallback:', primaryErr);
+                // Second try: plain fetch without Authorization header for diagnostics
+                try {
+                    const url = BASE + (userId ? `/appointments/list?user_id=${userId}` : '/appointments/list');
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        data = await res.json();
+                        showToast('Citas cargadas (fallback sin token). Revisa permisos/CORS o token.', 'info');
+                    } else {
+                        console.warn('Fallback fetch responded with', res.status);
+                    }
+                } catch (fallbackErr) {
+                    console.error('Fallback fetch also failed:', fallbackErr);
+                }
+            }
+
+            if (!data || !data.data) {
+                showToast('No se pudieron cargar citas desde el backend. Mostrando datos de ejemplo.', 'error', 6000);
+                return;
+            }
+
+            // Map backend rows to appointment objects expected by the UI
+            appointments.length = 0; // clear sample only when we have backend data
+            data.data.forEach(r => {
+                const raw = r.date_time || r.date || r.datetime || r.date_time_iso || '';
+                const parsed = parseDateTime(raw);
+                let dateForUi = parsed.date || '';
+                let timeForUi = parsed.time || '';
+                // If backend returned explicit parts, prefer them
+                if (!dateForUi && r.date_only) dateForUi = String(r.date_only);
+                if (!timeForUi && r.time_only) timeForUi = String(r.time_only).slice(0,5);
+                // Fallback to created_at when no scheduled date
+                if (!dateForUi && r.created_at_iso) dateForUi = String(r.created_at_iso).slice(0,19);
+                if (!dateForUi && r.created_at) dateForUi = String(r.created_at).slice(0,19);
+
+                appointments.push({
+                    id: r.id,
+                    professional_id: r.professional_id || r.professionalId || null,
+                    professional: r.professional_name || r.professional || 'Profesional',
+                    specialty: r.specialty || '',
+                    date: dateForUi,
+                    time: timeForUi,
+                    status: r.status || 'proximas',
+                    reason: r.notes || r.description || ''
+                });
+            });
+
+            loadAppointments();
+            updateCounts();
+        }
+
+    // Start initialization
+    document.addEventListener('DOMContentLoaded', init);
     </script>       
 </body>
 </html>

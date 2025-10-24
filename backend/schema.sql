@@ -1,0 +1,22 @@
+-- Esquema mínimo para la base de datos 'citas'
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(200) NOT NULL UNIQUE,
+  specialty VARCHAR(150) DEFAULT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'usuario',
+  api_token VARCHAR(64) DEFAULT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS appointments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  professional_id INT NOT NULL,
+  date_time DATETIME NOT NULL,
+  notes TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (professional_id) REFERENCES users(id) ON DELETE CASCADE
+);
