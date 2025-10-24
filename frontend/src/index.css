@@ -183,6 +183,31 @@ select.input-field {
     color: #991b1b;
 }
 
+.time-slot {
+    transition: all 0.3s ease;
+}
+
+.time-slot:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Estilos para los slots reservados */
+.slot-reserved {
+    background-color: rgba(59, 130, 246, 0.1);
+    cursor: not-allowed;
+}
+
+/* Animaciones para los cambios de estado */
+.slot-transition {
+    transition: all 0.3s ease;
+}
+
+/* Estilos para los días no laborables */
+.non-working-day {
+    background-color: #f9fafb;
+    cursor: not-allowed;
+}
+
 /* Landing */
 @keyframes fadeIn {
     from {

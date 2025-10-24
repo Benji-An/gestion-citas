@@ -24,12 +24,12 @@
                         <div class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full inline-block">Odontología
                         </div>
                     </div>
-                    <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                    <a href="/index/login_profesional.html" class="p-2 hover:bg-gray-100 rounded-lg transition">
                         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -107,7 +107,7 @@
         </div>
     </main>
 
-      <!-- Horario Section -->
+    <!-- Horario Section -->
     <main id="section-horario" class="mx-auto px-8 py-8" style="max-width: 98%">
         <h1 class="text-3xl font-bold mb-2">Configurar Horario</h1>
         <p class="text-gray-600 mb-8">Define tu disponibilidad semanal</p>
@@ -118,9 +118,11 @@
                 <button class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium">
                     Guardar cambios
                 </button>
-                <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700 font-medium">
+                <button
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700 font-medium">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     Restaurar horario
                 </button>
@@ -166,113 +168,9 @@
                     <span class="text-xs text-gray-500">27 Oct</span>
                 </div>
             </div>
-
             <!-- Slots de tiempo -->
             <div class="divide-y" id="timeSlots">
                 <!-- Las franjas horarias se generarán dinámicamente con JavaScript -->
-            </div>
-        </div>
-
-        <!-- Configuración de disponibilidad -->
-        <div class="grid grid-cols-3 gap-6">
-            <!-- Configuración de horarios -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4">Horarios predeterminados</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de inicio</label>
-                        <select class="w-full rounded-lg border-gray-300 hora-inicio">
-                            <!-- Las opciones se generarán dinámicamente -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de fin</label>
-                        <select class="w-full rounded-lg border-gray-300 hora-fin">
-                            <!-- Las opciones se generarán dinámicamente -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Días laborales</label>
-                        <div class="space-y-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
-                                <span class="ml-2 text-sm">Lunes a Viernes</span>
-                            </label>
-                            <label class="inline-flex items-center block">
-                                <input type="checkbox" class="form-checkbox rounded text-blue-600">
-                                <span class="ml-2 text-sm">Sábados</span>
-                            </label>
-                            <label class="inline-flex items-center block">
-                                <input type="checkbox" class="form-checkbox rounded text-blue-600">
-                                <span class="ml-2 text-sm">Domingos</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Configuración de citas -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4">Configuración de citas</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Duración de citas</label>
-                        <select class="w-full rounded-lg border-gray-300">
-                            <option>30 minutos</option>
-                            <option selected>45 minutos</option>
-                            <option>1 hora</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Intervalo entre citas</label>
-                        <select class="w-full rounded-lg border-gray-300">
-                            <option>Sin intervalo</option>
-                            <option>5 minutos</option>
-                            <option selected>15 minutos</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Citas simultáneas</label>
-                        <select class="w-full rounded-lg border-gray-300">
-                            <option selected>1 cita a la vez</option>
-                            <option>2 citas a la vez</option>
-                            <option>3 citas a la vez</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Configuración de notificaciones -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4">Notificaciones</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Recordatorios</label>
-                        <div class="space-y-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
-                                <span class="ml-2 text-sm">Email al paciente</span>
-                            </label>
-                            <label class="inline-flex items-center block">
-                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
-                                <span class="ml-2 text-sm">Email al profesional</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirmaciones</label>
-                        <div class="space-y-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
-                                <span class="ml-2 text-sm">Confirmar automáticamente</span>
-                            </label>
-                            <label class="inline-flex items-center block">
-                                <input type="checkbox" class="form-checkbox rounded text-blue-600" checked>
-                                <span class="ml-2 text-sm">Notificar confirmación</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </main>
@@ -803,6 +701,273 @@
             initializeSchedule();
             updateTimeSelectors();
         });
+
+        // Desde aqui empieza
+        const AppState = {
+            currentUser: {
+                login: 'AndreaRuizP',
+                name: 'Andrea Ruiz',
+                specialty: 'Odontología',
+                timezone: 'UTC-5'
+            },
+            currentDate: new Date('2025-10-24T18:05:08Z'),
+            schedule: {
+                workDays: [1, 2, 3, 4, 5],
+                workHours: {
+                    start: 6,
+                    end: 18
+                },
+                appointmentDuration: 45,
+                appointmentInterval: 15,
+                simultaneousAppointments: 1
+            },
+            appointments: [],
+            slotStates: {
+                AVAILABLE: 'available',
+                BUSY: 'busy',
+                BLOCKED: 'blocked'
+            }
+        };
+
+        // Función para formatear la hora en formato 12 horas
+        function formatTime(hour) {
+            const period = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+            return `${displayHour}:00 ${period}`;
+        }
+
+        // Función para obtener el rango de fechas de la semana actual
+        function getCurrentWeekDates() {
+            const curr = new Date(AppState.currentDate);
+            const week = [];
+
+            // Encontrar el lunes de la semana actual
+            const first = curr.getDate() - curr.getDay() + 1;
+
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(curr.setDate(first + i));
+                week.push({
+                    date: day,
+                    dayName: new Intl.DateTimeFormat('es-ES', { weekday: 'long' }).format(day),
+                    dayNumber: day.getDate(),
+                    month: new Intl.DateTimeFormat('es-ES', { month: 'short' }).format(day)
+                });
+            }
+
+            return week;
+        }
+
+        // Función para generar las franjas horarias
+        function generateTimeSlots() {
+            const timeSlots = document.getElementById('timeSlots');
+            const weekDates = getCurrentWeekDates();
+            timeSlots.innerHTML = '';
+
+            for (let hour = AppState.schedule.workHours.start; hour <= AppState.schedule.workHours.end; hour++) {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'grid grid-cols-8 divide-x';
+
+                let slotHTML = `
+            <div class="py-4 px-6 border-r bg-gray-50">
+                <span class="text-sm text-gray-500">${formatTime(hour)}</span>
+            </div>
+        `;
+
+                weekDates.forEach((day, index) => {
+                    const isWorkDay = AppState.schedule.workDays.includes(index + 1);
+                    const slotDate = new Date(day.date);
+                    slotDate.setHours(hour, 0, 0, 0);
+
+                    const slotId = `slot-${slotDate.toISOString()}`;
+
+                    if (!isWorkDay) {
+                        slotHTML += `
+                    <div class="p-2 border-r bg-gray-50"></div>
+                `;
+                    } else {
+                        const appointment = AppState.appointments.find(apt =>
+                            apt.date.getTime() === slotDate.getTime()
+                        );
+                        let style;
+
+                        switch (appointment?.status) {
+                            case AppState.slotStates.BUSY:
+                                style = {
+                                    containerClass: 'bg-yellow-100',
+                                    textClass: 'text-yellow-800',
+                                    text: 'Ocupado'
+                                };
+                                break;
+                            case AppState.slotStates.BLOCKED:
+                                style = {
+                                    containerClass: 'bg-gray-100',
+                                    textClass: 'text-gray-600',
+                                    text: 'Bloqueado'
+                                };
+                                break;
+                            default:
+                                style = {
+                                    containerClass: 'border-2 border-dashed border-blue-200 hover:border-blue-400',
+                                    textClass: 'text-blue-600',
+                                    text: 'Disponible'
+                                };
+                        }
+
+                        slotHTML += `
+                    <div class="p-2 border-r hover:bg-blue-50 cursor-pointer" 
+                         data-slot-id="${slotId}"
+                         data-state="${appointment?.status || AppState.slotStates.AVAILABLE}">
+                        <div class="h-full rounded-lg ${style.containerClass} flex items-center justify-center">
+                            <span class="text-xs ${style.textClass} font-medium">${style.text}</span>
+                        </div>
+                    </div>
+                `;
+                    }
+                });
+
+                timeSlot.innerHTML = slotHTML;
+                timeSlots.appendChild(timeSlot);
+            }
+
+            addSlotClickHandlers();
+        }
+
+        // Función para verificar disponibilidad
+        function checkAvailability(date) {
+            const appointment = AppState.appointments.find(apt =>
+                apt.date.getTime() === date.getTime()
+            );
+            return !appointment || appointment.status === AppState.slotStates.AVAILABLE;
+        }
+
+        // Función para actualizar la cabecera del calendario
+        function updateCalendarHeader() {
+            const weekDates = getCurrentWeekDates();
+            const headerCells = document.querySelectorAll('.grid.grid-cols-8 > div:not(:first-child)');
+
+            headerCells.forEach((cell, index) => {
+                const dayData = weekDates[index];
+                const daySpan = cell.querySelector('span:first-child');
+                const dateSpan = cell.querySelector('span:last-child');
+
+                if (daySpan && dateSpan) {
+                    daySpan.textContent = dayData.dayName;
+                    dateSpan.textContent = `${dayData.dayNumber} ${dayData.month}`;
+                }
+            });
+        }
+
+        // Función para manejar los clics en los slots
+        function addSlotClickHandlers() {
+            const slots = document.querySelectorAll('[data-slot-id]');
+            slots.forEach(slot => {
+                slot.addEventListener('click', function () {
+                    const slotId = this.dataset.slotId;
+                    const slotDate = new Date(slotId.replace('slot-', ''));
+                    toggleSlotAvailability(this, slotDate);
+                });
+            });
+        }
+
+        // La función toggleSlotAvailability modificada
+        function toggleSlotAvailability(slotElement, date) {
+            const currentState = slotElement.getAttribute('data-state') || AppState.slotStates.AVAILABLE;
+            let newState, style;
+
+            // Rotación entre estados: Disponible -> Ocupado -> Bloqueado
+            switch (currentState) {
+                case AppState.slotStates.AVAILABLE:
+                    newState = AppState.slotStates.BUSY;
+                    style = {
+                        containerClass: 'bg-green-100',
+                        textClass: 'text-green-800',
+                        text: 'Ocupado'
+                    };
+                    break;
+                case AppState.slotStates.BUSY:
+                    newState = AppState.slotStates.BLOCKED;
+                    style = {
+                        containerClass: 'bg-gray-100',
+                        textClass: 'text-gray-600',
+                        text: 'Bloqueado'
+                    };
+                    break;
+                case AppState.slotStates.BLOCKED:
+                    newState = AppState.slotStates.AVAILABLE;
+                    style = {
+                        containerClass: 'border-2 border-dashed border-blue-200 hover:border-blue-400',
+                        textClass: 'text-blue-600',
+                        text: 'Disponible'
+                    };
+                    break;
+                default:
+                    newState = AppState.slotStates.AVAILABLE;
+                    style = {
+                        containerClass: 'border-2 border-dashed border-blue-200 hover:border-blue-400',
+                        textClass: 'text-blue-600',
+                        text: 'Disponible'
+                    };
+            }
+
+            // Actualizar el estado en el elemento
+            slotElement.setAttribute('data-state', newState);
+
+            // Actualizar el HTML del slot
+            slotElement.innerHTML = `
+        <div class="h-full rounded-lg ${style.containerClass} flex items-center justify-center">
+            <span class="text-xs ${style.textClass} font-medium">${style.text}</span>
+        </div>
+    `;
+
+            // Actualizar el estado en AppState
+            if (newState === AppState.slotStates.AVAILABLE) {
+                AppState.appointments = AppState.appointments.filter(apt =>
+                    apt.date.getTime() !== date.getTime()
+                );
+            } else {
+                const existingAppointment = AppState.appointments.find(apt =>
+                    apt.date.getTime() === date.getTime()
+                );
+                if (existingAppointment) {
+                    existingAppointment.status = newState;
+                } else {
+                    AppState.appointments.push({ date: date, status: newState });
+                }
+            }
+        }
+
+        // Función para guardar cambios
+        function saveChanges() {
+            alert('Cambios guardados correctamente');
+        }
+
+        // Función para restaurar horario
+        function resetSchedule() {
+            if (confirm('¿Estás seguro de que deseas restaurar el horario? Se perderán todos los cambios.')) {
+                AppState.appointments = [];
+                generateTimeSlots();
+            }
+        }
+
+        // Función para inicializar la aplicación
+        function initializeApp() {
+            // Actualizar información del usuario
+            document.querySelector('.text-sm.font-semibold').textContent = AppState.currentUser.name;
+            document.querySelector('.text-xs.bg-blue-500').textContent = AppState.currentUser.specialty;
+
+            // Actualizar cabecera del calendario
+            updateCalendarHeader();
+
+            // Generar slots de tiempo
+            generateTimeSlots();
+
+            // Configurar event listeners
+            document.getElementById('saveChanges').addEventListener('click', saveChanges);
+            document.getElementById('resetSchedule').addEventListener('click', resetSchedule);
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 
