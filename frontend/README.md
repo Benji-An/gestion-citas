@@ -14,3 +14,12 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+Frontend
+
+- Para iniciar el frontend - npm run dev
+- En la parte de Navbar, login_clientes, login_profesional y registro_clientes hay una etiqueta llamada link que es la que hace las redirecciones.
+- import { Link } from 'react-router-dom'; - Se necesita esta libreria para que funcionen las rutas
+- El App.jsx esta dividido con dos funciones:
+    1. Es para lo que va en el inicio que es la function MainLayout
+    2. Es para las rutas funcionen correcatamente que es la function App
