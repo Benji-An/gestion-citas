@@ -73,7 +73,6 @@ const Benefits = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Título y descripción */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Beneficios para todos
@@ -84,7 +83,6 @@ const Benefits = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Para Profesionales */}
           <div className="bg-white rounded-xl shadow-sm p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               Para Profesionales
@@ -110,8 +108,6 @@ const Benefits = () => {
               ))}
             </div>
           </div>
-
-          {/* Para Clientes */}
           <div className="bg-white rounded-xl shadow-sm p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               Para Clientes

@@ -48,7 +48,7 @@ const Footer = () => {
               <li>
                 <a 
                   href="#caracteristicas" 
-                  className="text-gray-600 hover:text-cyan-500 text-sm transition-colors"
+                  className="text-gray-600 hover:text-green-500 text-sm transition-colors"
                 >
                   Características
                 </a>
@@ -56,7 +56,7 @@ const Footer = () => {
               <li>
                 <a 
                   href="#precios" 
-                  className="text-gray-600 hover:text-cyan-500 text-sm transition-colors"
+                  className="text-gray-600 hover:text-green-500 text-sm transition-colors"
                 >
                   Precios
                 </a>
@@ -64,7 +64,7 @@ const Footer = () => {
               <li>
                 <a 
                   href="#contacto" 
-                  className="text-gray-600 hover:text-cyan-500 text-sm transition-colors"
+                  className="text-gray-600 hover:text-green-500 text-sm transition-colors"
                 >
                   Contacto
                 </a>

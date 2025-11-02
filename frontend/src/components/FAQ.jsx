@@ -25,21 +25,17 @@ const FAQ = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Título */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900">
             Preguntas Frecuentes
           </h2>
         </div>
-
-        {/* Acordeón de preguntas */}
         <div className="space-y-4">
           {faqs.map((faq, index) => (
             <div 
               key={index}
               className="bg-white rounded-lg shadow-sm overflow-hidden"
             >
-              {/* Pregunta (botón) */}
               <button
                 onClick={() => toggleFAQ(index)}
                 className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
@@ -58,8 +54,6 @@ const FAQ = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-
-              {/* Respuesta (desplegable) */}
               <div 
                 className={`transition-all duration-300 ease-in-out ${
                   openIndex === index 

@@ -3,9 +3,12 @@ import Slider from './components/Slider';
 import Benefits from './components/Benefits';
 import Testimonials from './components/Opinions';
 import FAQ from './components/FAQ';
-import Footer from './components/Footer';  
+import Footer from './components/Footer';
+import Login from './pages/login_clientes';
+import Register from './pages/registro_clientes';
+import { Routes, Route } from 'react-router-dom';
 
-function App() {
+function MainLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -17,6 +20,16 @@ function App() {
       <FAQ />
       <Footer />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />} />
+      <Route path="/login_clientes" element={<Login />} />
+      <Route path="/registro_clientes" element={<Register />} />
+    </Routes>
   );
 }
 
