@@ -13,6 +13,6 @@ Esta es la distribución que tiene el frontend:
 1. Para la landing page
     - Componentes: Navbar.jsx, Benefits.jsx, Slider.jsx, Opinions.jsx, FAQ.jsx, Footer.jsx
 2. Para el dashboard del cliente
-    - Componentes: Dashboard_cliente.jsx, Navbar_cliente.jsx, Sidebar_cliente.jsx
+    - Pages: Dashboard_cliente.jsx, Navbar_cliente.jsx, Sidebar_cliente.jsx, Citas_cliente.jsx, Favorites_cliente.jsx, Perfil_profesional.jsx, Inicio_clientes.jsx
 
 Y las rutas estan en App.jsx
