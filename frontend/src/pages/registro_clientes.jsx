@@ -191,12 +191,12 @@ const Register = () => {
             </div>
 
             {/* Botón de envío */}
-            <button
-              type="submit"
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+            <Link 
+              to="/inicio_clientes" 
+              className="w-full inline-flex justify-center px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors text-center"
             >
               Crear Cuenta
-            </button>
+            </Link>
           </form>
 
           {/* Link a login */}

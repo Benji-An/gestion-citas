@@ -6,6 +6,8 @@ import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import Login from './pages/login_clientes';
 import Register from './pages/registro_clientes';
+import InicioClientes from './pages/inicio_clientes';
+import ClientDashboard from './components/Dashboard_cliente';
 import { Routes, Route } from 'react-router-dom';
 
 function MainLayout() {
@@ -27,8 +29,14 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />} />
+      {/* Rutas de autenticación */}
       <Route path="/login_clientes" element={<Login />} />
       <Route path="/registro_clientes" element={<Register />} />
+      {/* Rutas del cliente */}
+      <Route path="/Dashboard_cliente" element={<ClientDashboard />} />
+      <Route path="/inicio_clientes" element={<InicioClientes />} />
+      <Route path="/cliente/citas" element={<ClientDashboard />} />
+      <Route path="/cliente/favoritos" element={<ClientDashboard />} />
     </Routes>
   );
 }

@@ -112,7 +112,7 @@ const Login = () => {
               </a>
             </div>
             <Link 
-              to="/inicio" 
+              to="/inicio_clientes" 
               className="w-full inline-flex justify-center px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors text-center"
             >
               Iniciar Sesión
