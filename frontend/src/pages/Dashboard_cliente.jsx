@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ClientNavbar from '../components/Navbar_cliente';
+import { Link } from 'react-router-dom';
 
 const ClientDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -218,9 +220,9 @@ const ClientDashboard = () => {
                 </div>
 
                 {/* Botón */}
-                <button className="w-full bg-gray-100 hover:bg-green-600 hover:text-white text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
-                  Ver Perfil
-                </button>
+                <Link to="/Perfil_profesional" className="w-full bg-gray-100 hover:bg-green-600 hover:text-white text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-center block">
+                  Ver perfil
+                </Link>
               </div>
             </div>
           ))}

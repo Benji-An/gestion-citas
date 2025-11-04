@@ -10,7 +10,7 @@ import InicioClientes from './pages/inicio_clientes';
 import ClientDashboard from './pages/Dashboard_cliente';
 import ClientAppointments from './pages/Citas_cliente';
 import ClientFavorites from './pages/Favorites_cliente';
-
+import ProfessionalProfile from './pages/Perfil_porfesional';
 import { Routes, Route } from 'react-router-dom';
 
 function MainLayout() {
@@ -42,6 +42,7 @@ function App() {
       <Route path="/cliente" element={<InicioClientes />} />
       <Route path="/cliente/citas" element={<ClientAppointments />} />
       <Route path="/cliente/favoritos" element={<ClientFavorites />} />
+      <Route path="/Perfil_profesional" element={<ProfessionalProfile />} />
     </Routes>
   );
 }
