@@ -88,7 +88,7 @@ const ClientDashboard = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Título principal */}
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
           Encuentra al profesional que necesitas
@@ -182,7 +182,7 @@ const ClientDashboard = () => {
               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Imagen */}
-              <div className="h-48 bg-green-500 flex items-center justify-center">
+              <div className="h-48 bg-emerald-100 flex items-center justify-center">
                 <img 
                   src={professional.image}
                   alt={professional.name}
@@ -195,7 +195,7 @@ const ClientDashboard = () => {
                 <h3 className="text-lg font-bold text-gray-900 mb-1">
                   {professional.name}
                 </h3>
-                <p className="text-cyan-600 text-sm font-medium mb-2">
+                <p className="text-emerald-600 text-sm font-medium mb-2">
                   {professional.specialty}
                 </p>
                 <div className="flex items-center text-gray-500 text-sm mb-3">
@@ -220,7 +220,7 @@ const ClientDashboard = () => {
                 </div>
 
                 {/* Botón */}
-                <button className="w-full bg-gray-100 hover:bg-teal-600 hover:text-white text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                <button className="w-full bg-gray-100 hover:bg-green-600 hover:text-white text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
                   Ver Perfil
                 </button>
               </div>
@@ -235,7 +235,7 @@ const ClientDashboard = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <button className="px-3 py-1 bg-teal-600 text-white rounded-lg font-medium">1</button>
+          <button className="px-3 py-1 bg-green-600 text-white rounded-lg font-medium">1</button>
           <button className="px-3 py-1 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">2</button>
           <button className="px-3 py-1 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">3</button>
           <span className="px-2 text-gray-500">...</span>
