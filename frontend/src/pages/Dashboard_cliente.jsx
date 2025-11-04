@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import ClientNavbar from './Navbar_cliente';
 
 const ClientDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -193,7 +192,6 @@ const ClientDashboard = () => {
               {/* Contenido */}
               <div className="p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-1">
-                  {professional.name}
                 </h3>
                 <p className="text-emerald-600 text-sm font-medium mb-2">
                   {professional.specialty}

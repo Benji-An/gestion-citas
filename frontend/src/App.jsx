@@ -7,7 +7,10 @@ import Footer from './components/Footer';
 import Login from './pages/login_clientes';
 import Register from './pages/registro_clientes';
 import InicioClientes from './pages/inicio_clientes';
-import ClientDashboard from './components/Dashboard_cliente';
+import ClientDashboard from './pages/Dashboard_cliente';
+import ClientAppointments from './pages/Citas_cliente';
+import ClientFavorites from './pages/Favorites_cliente';
+
 import { Routes, Route } from 'react-router-dom';
 
 function MainLayout() {
@@ -35,8 +38,10 @@ function App() {
       {/* Rutas del cliente */}
       <Route path="/Dashboard_cliente" element={<ClientDashboard />} />
       <Route path="/inicio_clientes" element={<InicioClientes />} />
-      <Route path="/cliente/citas" element={<ClientDashboard />} />
-      <Route path="/cliente/favoritos" element={<ClientDashboard />} />
+      {/* Cliente routes */}
+      <Route path="/cliente" element={<InicioClientes />} />
+      <Route path="/cliente/citas" element={<ClientAppointments />} />
+      <Route path="/cliente/favoritos" element={<ClientFavorites />} />
     </Routes>
   );
 }

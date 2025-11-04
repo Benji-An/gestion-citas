@@ -1,5 +1,67 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+
+// Small notification bell + dropdown component
+function NotificationBell() {
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: 'Tienes una nueva reserva pendiente', time: '2h', read: false },
+    { id: 2, text: 'Tu cita con Dra. Ana está confirmada', time: '1d', read: false },
+    { id: 3, text: 'Recuerda completar tu perfil', time: '3d', read: true },
+  ]);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const unread = notifications.filter(n => !n.read).length;
+
+  function markAllRead() {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+        aria-label="Notificaciones"
+      >
+        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        {unread > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
+            {unread}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50">
+          <div className="flex items-center justify-between px-4 py-2 border-b">
+            <span className="font-semibold text-sm">Notificaciones</span>
+            <button onClick={markAllRead} className="text-xs text-green-600 hover:underline">Marcar todas</button>
+          </div>
+          <div className="max-h-60 overflow-auto">
+            {notifications.map(n => (
+              <div key={n.id} className={`px-4 py-3 hover:bg-gray-50 ${n.read ? 'opacity-80' : ''}`}>
+                <p className="text-sm text-gray-700">{n.text}</p>
+                <p className="text-xs text-gray-400 mt-1">{n.time}</p>
+              </div>
+            ))}
+            {notifications.length === 0 && <div className="p-4 text-sm text-gray-500">No hay notificaciones</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const ClientNavbar = () => {
   return (
@@ -17,7 +79,13 @@ const ClientNavbar = () => {
           </Link>
 
           {/* Menú de navegación */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
+            <Link 
+              to="/cliente"
+              className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
+            >
+              Profesionales
+            </Link>
             <Link 
               to="/cliente/citas"
               className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
@@ -30,6 +98,9 @@ const ClientNavbar = () => {
             >
               Favoritos
             </Link>
+
+          {/* Botón de notificaciones */}
+            <NotificationBell />
 
             {/* Avatar de usuario */}
             <div className="relative group">
