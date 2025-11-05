@@ -98,6 +98,12 @@ const ClientNavbar = () => {
             >
               Favoritos
             </Link>
+            <Link 
+              to="/cliente/pagos"
+              className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
+            >
+              Mis Pagos
+            </Link>
 
           {/* Botón de notificaciones */}
             <NotificationBell />
@@ -122,12 +128,6 @@ const ClientNavbar = () => {
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Mi Perfil
-                </Link>
-                <Link 
-                  to="/cliente/configuracion"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Configuración
                 </Link>
                 <hr className="my-2" />
                 <Link 

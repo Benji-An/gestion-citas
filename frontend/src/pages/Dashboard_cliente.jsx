@@ -220,7 +220,7 @@ const ClientDashboard = () => {
                 </div>
 
                 {/* Botón */}
-                <Link to="/Perfil_profesional" className="w-full bg-gray-100 hover:bg-green-600 hover:text-white text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-center block">
+                <Link to="/Buscar_profesional" className="w-full bg-gray-100 hover:bg-green-600 hover:text-white text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-center block">
                   Ver perfil
                 </Link>
               </div>

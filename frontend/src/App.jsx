@@ -10,7 +10,11 @@ import InicioClientes from './pages/inicio_clientes';
 import ClientDashboard from './pages/Dashboard_cliente';
 import ClientAppointments from './pages/Citas_cliente';
 import ClientFavorites from './pages/Favorites_cliente';
-import ProfessionalProfile from './pages/Perfil_porfesional';
+import ProfessionalProfile from './pages/Buscar_porfesional';
+import BookAppointment from './pages/Confirmacion_cita';
+import Payment from './pages/Pasarela_pago';
+import PaymentHistory from './pages/Historial_pagos';
+import ClientProfile from './pages/Perfil_clientes';
 import { Routes, Route } from 'react-router-dom';
 
 function MainLayout() {
@@ -42,7 +46,11 @@ function App() {
       <Route path="/cliente" element={<InicioClientes />} />
       <Route path="/cliente/citas" element={<ClientAppointments />} />
       <Route path="/cliente/favoritos" element={<ClientFavorites />} />
-      <Route path="/Perfil_profesional" element={<ProfessionalProfile />} />
+      <Route path="/cliente/pagos" element={<PaymentHistory />} />
+      <Route path="/cliente/perfil" element={<ClientProfile />} />
+      <Route path="/Buscar_profesional" element={<ProfessionalProfile />} />
+      <Route path="/Confirmacion_cita" element={<BookAppointment />} />
+      <Route path="/Pasarela_pago" element={<Payment />} />
     </Routes>
   );
 }

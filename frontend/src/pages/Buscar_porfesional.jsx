@@ -17,6 +17,32 @@ const ProfessionalProfile = () => {
     reviews: 124
   };
 
+  // Generar un id/clave simple para persistir favorito en localStorage
+  const professionalId = professional.name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+
+  const [isFavorited, setIsFavorited] = useState(() => {
+    try {
+      return localStorage.getItem(`fav_${professionalId}`) === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const toggleFavorite = () => {
+    setIsFavorited((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(`fav_${professionalId}`, next.toString());
+      } catch (e) {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
+
   const services = [
     {
       id: 1,
@@ -172,16 +198,33 @@ const ProfessionalProfile = () => {
                     {professional.description}
                   </p>
                   <div className="flex items-center space-x-4">
-                    <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </button>
-                    <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      </svg>
-                    </button>
+                      <div className="flex items-center space-x-2">
+                        {/* Botón favorito: toggle y persistencia en localStorage */}
+                        <button
+                          type="button"
+                          onClick={toggleFavorite}
+                          aria-pressed={isFavorited}
+                          className={`p-2 rounded-lg transition-colors focus:outline-none ${isFavorited ? 'bg-red-50' : 'hover:bg-gray-50'}`}
+                          title={isFavorited ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                        >
+                          {isFavorited ? (
+                            <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.54 0 3.04.99 3.57 2.36h.87C13.46 4.99 14.96 4 16.5 4 19 4 21 6 21 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-6 h-6 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.182 4.318 12.682a4.5 4.5 0 010-6.364z" />
+                            </svg>
+                          )}
+                        </button>
+
+                        {/* Botón secundario (ej. compartir) */}
+                        <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                          </svg>
+                        </button>
+                      </div>
                   </div>
                 </div>
               </div>
