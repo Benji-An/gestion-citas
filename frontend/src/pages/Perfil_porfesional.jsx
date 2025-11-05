@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 
 const ProfessionalProfile = () => {
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState('11:00');
-  const [currentMonth, setCurrentMonth] = useState(5); // Junio (0-indexed)
-  const [currentYear, setCurrentYear] = useState(2024);
+  const [selectedTime, setSelectedTime] = useState('sin seleccionar');
+  const [currentMonth, setCurrentMonth] = useState(selectedDate ? selectedDate.getMonth() : new Date().getMonth()); // Junio (0-indexed)
+  const [currentYear, setCurrentYear] = useState(selectedDate ? selectedDate.getFullYear() : new Date().getFullYear());
 
   const professional = {
     name: "Dra. Isabel Martínez",
@@ -165,7 +165,7 @@ const ProfessionalProfile = () => {
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     {professional.name}
                   </h1>
-                  <p className="text-teal-600 font-medium mb-3">
+                  <p className="text-emerald-600 font-medium mb-3">
                     {professional.specialty}
                   </p>
                   <p className="text-gray-600 mb-4">
@@ -194,7 +194,7 @@ const ProfessionalProfile = () => {
                 {services.map((service) => (
                   <div 
                     key={service.id}
-                    className="border-2 border-gray-200 rounded-lg p-4 hover:border-teal-500 transition-colors cursor-pointer"
+                    className="border-2 border-gray-200 rounded-lg p-4 hover:border-green-500 transition-colors cursor-pointer"
                   >
                     <h3 className="font-semibold text-gray-900 mb-2">
                       {service.name}
@@ -218,7 +218,7 @@ const ProfessionalProfile = () => {
                 {reviews.map((review) => (
                   <div key={review.id} className="border-b border-gray-200 pb-4 last:border-b-0">
                     <div className="flex items-start space-x-4">
-                      <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold">
                         {review.initials}
                       </div>
                       <div className="flex-1">
@@ -284,7 +284,7 @@ const ProfessionalProfile = () => {
                       className={`
                         aspect-square flex items-center justify-center text-sm rounded-lg
                         ${!day ? 'invisible' : ''}
-                        ${day === selectedDate ? 'bg-cyan-500 text-white font-semibold' : 'hover:bg-gray-100'}
+                        ${day === selectedDate ? 'bg-green-500 text-white font-semibold' : 'hover:bg-green-100'}
                         ${day && day !== selectedDate ? 'text-gray-700' : ''}
                         transition-colors
                       `}
@@ -310,8 +310,8 @@ const ProfessionalProfile = () => {
                       className={`
                         py-2 px-3 text-sm font-medium rounded-lg border-2 transition-colors
                         ${selectedTime === slot.time
-                          ? 'bg-cyan-500 border-cyan-500 text-white'
-                          : 'border-gray-200 text-gray-700 hover:border-cyan-500'
+                          ? 'bg-green-500 border-green-500 text-white'
+                          : 'border-gray-200 text-gray-700 hover:border-green-500'
                         }
                       `}
                     >
@@ -322,9 +322,11 @@ const ProfessionalProfile = () => {
               </div>
 
               {/* Botón agendar */}
-              <button className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-lg transition-colors">
+              <Link to="/confirmacion_cita" 
+                className="block w-full text-center bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 transition-colors"
+              >
                 Agendar Cita
-              </button>
+              </Link>
             </div>
           </div>
         </div>
