@@ -1,13 +1,73 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import ProfessionalNavbar from '../components/Navbar_profesional';
 import AvailabilityModal from '../components/Disponibilidad';
-import GoToDateModal from '../components/Date';
 
-/*
-  ProfessionalAgenda (versión compacta + modal "Ir a fecha")
-  Reemplaza prompt() por GoToDateModal para mejorar UX visual.
-*/
+const GoToDateModal = ({ isOpen, onClose, initialDate, onGo }) => {
+  const [date, setDate] = useState(initialDate || '');
 
+  useEffect(() => {
+    if (isOpen) {
+      setDate(initialDate || '');
+      const t = setTimeout(() => {
+        const el = document.getElementById('goto-date-input');
+        if (el) el.focus();
+      }, 120);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen, initialDate]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!date) return;
+    onGo(date);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-5">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Ir a fecha</h3>
+        <p className="text-sm text-gray-600 mb-4">Introduce la fecha para ir a esa semana.</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="goto-date-input" className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+            <input
+              id="goto-date-input"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded focus:ring-2 focus:ring-cyan-300 outline-none bg-gray-50"
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-1 rounded bg-cyan-600 hover:bg-cyan-700 text-white text-sm"
+            >
+              Ir
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* -------------------------
+   Agenda main component
+   ------------------------- */
 const HOURS = Array.from({ length: 13 }).map((_, i) => 8 + i); // 8..20
 const weekdayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
@@ -59,7 +119,7 @@ const ProfessionalAgenda = () => {
   const [selectedCell, setSelectedCell] = useState(null);
   const [showOnlyFree, setShowOnlyFree] = useState(false);
 
-  // nuevo estado para modal "Ir a fecha"
+  // GoTo modal state (embedded)
   const [isGoToOpen, setGoToOpen] = useState(false);
   const [goToInitial, setGoToInitial] = useState(isoDate(today));
 
@@ -114,7 +174,6 @@ const ProfessionalAgenda = () => {
 
   const toggleOnlyFree = () => setShowOnlyFree(v => !v);
 
-  // handler que ejecuta el modal "Ir a fecha"
   const handleGoToDate = (iso) => {
     try {
       const d = new Date(iso);
@@ -123,8 +182,38 @@ const ProfessionalAgenda = () => {
       setSelectedCell(null);
     } catch (err) {
       console.error('Fecha inválida:', iso, err);
+      // fallback simple feedback (could be replaced by a toast)
       alert('Fecha inválida');
     }
+  };
+
+  // quick-book modal (in-place simple implementation)
+  const [isQuickBookOpen, setQuickBookOpen] = useState(false);
+  const [quickBookName, setQuickBookName] = useState('');
+  useEffect(() => {
+    if (isQuickBookOpen) {
+      setQuickBookName('');
+      const t = setTimeout(() => {
+        const el = document.getElementById('quick-book-input');
+        if (el) el.focus();
+      }, 120);
+      return () => clearTimeout(t);
+    }
+  }, [isQuickBookOpen]);
+
+  const openQuickBook = () => {
+    if (!selectedCell) { alert('Selecciona primero una celda'); return; }
+    setQuickBookOpen(true);
+  };
+
+  const handleQuickBook = (e) => {
+    e.preventDefault();
+    if (!quickBookName) return;
+    const id = Math.floor(Math.random()*100000);
+    const hh = String(selectedCell.hour).padStart(2,'0') + ':00:00';
+    const datetime = selectedCell.date + 'T' + hh;
+    setAppointments(prev => [{ id, patient: quickBookName, datetime, duration: 60, service: 'Consulta rápida', status: 'confirmed' }, ...prev]);
+    setQuickBookOpen(false);
   };
 
   return (
@@ -132,7 +221,7 @@ const ProfessionalAgenda = () => {
       <ProfessionalNavbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="mb-6 flex items-center justify-between">
+        <header className="mb-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
             <p className="text-sm text-gray-600 mt-1">Organiza tu semana y gestiona franjas horarias y citas.</p>
@@ -142,23 +231,59 @@ const ProfessionalAgenda = () => {
             <button onClick={prevWeek} className="px-2 py-1 text-sm rounded bg-white border hover:shadow">Anterior</button>
             <button onClick={goToThisWeek} className="px-2 py-1 text-sm rounded bg-white border hover:shadow">Esta semana</button>
             <button onClick={nextWeek} className="px-2 py-1 text-sm rounded bg-white border hover:shadow">Siguiente</button>
+          </div>
+        </header>
+
+        {/* --- Acción toolbar (moved to top for intuition) --- */}
+        <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => { setModalInitial({ date: isoDate(today), time: today.toTimeString().slice(0,5), duration: 60 }); setModalOpen(true); }}
               className="px-3 py-1 text-sm bg-cyan-600 text-white rounded hover:bg-cyan-700"
             >
               Añadir disponibilidad
             </button>
+
+            <button
+              onClick={openQuickBook}
+              className="px-3 py-1 text-sm bg-green-50 text-green-700 rounded hover:bg-green-100"
+            >
+              Reservar (rápido)
+            </button>
+
             <button
               onClick={() => { setGoToInitial(isoDate(today)); setGoToOpen(true); }}
-              className="px-2 py-1 text-sm bg-gray-100 rounded border hover:bg-gray-200"
+              className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
             >
               Ir a fecha
             </button>
+
+            <button
+              onClick={() => {
+                const id = prompt('ID de disponibilidad a eliminar (ej. a1):');
+                if (!id) return;
+                removeAvailability(id);
+              }}
+              className="px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100"
+            >
+              Eliminar disponibilidad
+            </button>
           </div>
-        </header>
+
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <input type="checkbox" checked={showOnlyFree} onChange={toggleOnlyFree} className="form-checkbox" />
+              Mostrar solo huecos libres
+            </label>
+
+            <div className="text-sm text-gray-500">
+              {selectedCell ? `Seleccionada: ${selectedCell.date} ${String(selectedCell.hour).padStart(2,'0')}:00` : 'Ninguna celda seleccionada'}
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-8 gap-6">
-          {/* Hours column (narrower) */}
+          {/* Hours column */}
           <div className="lg:col-span-1">
             <div className="text-sm text-gray-500 mb-2">Hora</div>
             <div className="bg-white rounded-lg shadow-sm p-2">
@@ -170,7 +295,7 @@ const ProfessionalAgenda = () => {
             </div>
           </div>
 
-          {/* Week grid (compact day columns) */}
+          {/* Week grid */}
           <div className="lg:col-span-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex gap-2">
@@ -183,10 +308,7 @@ const ProfessionalAgenda = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 text-sm text-gray-600">
-                  <input type="checkbox" checked={showOnlyFree} onChange={toggleOnlyFree} className="form-checkbox" />
-                  Mostrar solo huecos libres
-                </label>
+                {/* placeholder for future quick filters */}
               </div>
             </div>
 
@@ -241,75 +363,25 @@ const ProfessionalAgenda = () => {
             </div>
           </div>
 
-          {/* Actions panel (narrower) */}
+          {/* Small right column: availabilities list (kept compact) */}
           <aside className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-3">
-              <h3 className="font-semibold text-gray-900 text-sm mb-1">Acciones</h3>
-              <p className="text-xs text-gray-500 mb-3">Selecciona una celda para acciones rápidas</p>
-
-              <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    if (!selectedCell) { alert('Selecciona primero una celda del calendario'); return; }
-                    openNewAvailability(selectedCell.date, selectedCell.hour);
-                  }}
-                  className="w-full px-3 py-1 text-sm bg-cyan-600 text-white rounded hover:bg-cyan-700"
-                >
-                  Añadir Disponibilidad
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (!selectedCell) { alert('Selecciona una celda'); return; }
-                    const id = Math.floor(Math.random()*100000);
-                    const hh = String(selectedCell.hour).padStart(2,'0') + ':00:00';
-                    const datetime = selectedCell.date + 'T' + hh;
-                    const patient = prompt('Nombre del paciente para reservar (prueba):');
-                    if (!patient) return;
-                    setAppointments(prev => [{ id, patient, datetime, duration: 60, service: 'Consulta rápida', status: 'confirmed' }, ...prev]);
-                  }}
-                  className="w-full px-3 py-1 text-sm bg-green-50 text-green-700 rounded hover:bg-green-100"
-                >
-                  Reservar (rápido)
-                </button>
-
-                <button
-                  onClick={() => { setGoToInitial(isoDate(today)); setGoToOpen(true); }}
-                  className="w-full px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
-                >
-                  Ir a fecha
-                </button>
-
-                <button
-                  onClick={() => {
-                    const id = prompt('ID de disponibilidad a eliminar (ej. a1):');
-                    if (!id) return;
-                    removeAvailability(id);
-                  }}
-                  className="w-full px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100"
-                >
-                  Eliminar disponibilidad
-                </button>
-              </div>
-
-              <div className="mt-3 border-t pt-2">
-                <h4 className="text-xs font-medium">Disponibilidades</h4>
-                <div className="text-xs text-gray-500 mt-2 space-y-2">
-                  {availabilities.length === 0 && <div className="text-gray-400">No hay disponibilidades creadas</div>}
-                  {availabilities.map(a => (
-                    <div key={a.id} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-xs">{a.datetime.slice(0,10)}</div>
-                        <div className="text-gray-500 text-xs">{timeToHHMM(a.datetime)} · {a.duration}min</div>
-                      </div>
-                      <button onClick={() => removeAvailability(a.id)} className="text-red-500 text-xs">Eliminar</button>
+              <h3 className="font-semibold text-gray-900 text-sm mb-1">Disponibilidades</h3>
+              <div className="text-xs text-gray-500 mt-2 space-y-2">
+                {availabilities.length === 0 && <div className="text-gray-400">No hay disponibilidades creadas</div>}
+                {availabilities.map(a => (
+                  <div key={a.id} className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-xs">{a.datetime.slice(0,10)}</div>
+                      <div className="text-gray-500 text-xs">{timeToHHMM(a.datetime)} · {a.duration}min</div>
                     </div>
-                  ))}
-                </div>
+                    <button onClick={() => removeAvailability(a.id)} className="text-red-500 text-xs">Eliminar</button>
+                  </div>
+                ))}
               </div>
 
               <div className="mt-3 text-xs text-gray-400">
-                Tip: haz click en una celda para seleccionar día/hora. Usa "Añadir disponibilidad" para abrir el formulario.
+                Tip: haz click en una celda para seleccionar día/hora.
               </div>
             </div>
           </aside>
@@ -329,6 +401,36 @@ const ProfessionalAgenda = () => {
         initialDate={goToInitial}
         onGo={(iso) => handleGoToDate(iso)}
       />
+
+      {/* Quick-book modal (simple, inline) */}
+      {isQuickBookOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-5">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Reservar (rápido)</h3>
+            <p className="text-sm text-gray-600 mb-4">Reserva rápida para la celda seleccionada.</p>
+
+            <form onSubmit={handleQuickBook} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del paciente</label>
+                <input
+                  id="quick-book-input"
+                  type="text"
+                  value={quickBookName}
+                  onChange={(e) => setQuickBookName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded focus:ring-2 focus:ring-cyan-300 outline-none bg-gray-50"
+                  placeholder="Ej. Juan Pérez"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setQuickBookOpen(false)} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm">Cancelar</button>
+                <button type="submit" className="px-4 py-1 rounded bg-cyan-600 hover:bg-cyan-700 text-white text-sm">Reservar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
