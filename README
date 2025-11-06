@@ -16,3 +16,8 @@ Esta es la distribución que tiene el frontend:
     - Pages: Dashboard_cliente.jsx, Navbar_cliente.jsx, Sidebar_cliente.jsx, Citas_cliente.jsx, Favorites_cliente.jsx, Perfil_profesional.jsx, Inicio_clientes.jsx
 
 Y las rutas estan en App.jsx
+
+Puede que tengas una confusión con los archivos Buscar_profesional.jsx y Dashboard_cliente.jsx
+- Dashboard_cliente.jsx es la página principal del cliente cuando inicia sesión
+- Buscar_profesional.jsx es una página secundaria a la que se accede desde el Dashboard_cliente.jsx que seria el Perfil_profesional.jsx
+
