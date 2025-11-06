@@ -6,16 +6,15 @@ const ProfessionalNavbar = () => {
     <nav className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/profesional" className="flex items-center space-x-3">
+          <Link to="/inicio_profesional" className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center">
               <img src="/Tiiwa.png" alt="" />
             </div>
-            <span className="text-gray-800 font-semibold">Panel Profesional</span>
+            <span className="text-gray-800 font-semibold">Tiiwa</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-6">
             <Link to="/profesional" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Dashboard</Link>
-            <Link to="/profesional/citas" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Citas</Link>
             <Link to="/profesional/agenda" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Agenda</Link>
             <Link to="/profesional/pacientes" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Pacientes</Link>
             <Link to="/profesional/pagos" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Pagos</Link>
