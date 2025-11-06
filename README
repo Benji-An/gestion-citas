@@ -21,3 +21,5 @@ Puede que tengas una confusión con los archivos Buscar_profesional.jsx y Dashbo
 - Dashboard_cliente.jsx es la página principal del cliente cuando inicia sesión
 - Buscar_profesional.jsx es una página secundaria a la que se accede desde el Dashboard_cliente.jsx que seria el Perfil_profesional.jsx
 
+Los archivos Inicio_clientes.jsx e Inicio_profesionales.jsx
+- Solo es para poner el Navbar_cliente y el Navbar_profesional junto con los dashboards que son la vista principal

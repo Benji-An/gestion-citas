@@ -70,10 +70,10 @@ const ClientNavbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo y nombre */}
           <Link to="/cliente" className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-gradient-to-br  rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br  rounded-lg flex items-center justify-center">
                 <img src="/Tiiwa.png" alt="Logo" className="w-5 h-5" />
             </div>
-            <span className="text-gray-700 font-medium text-sm">
+            <span className="text-gray-700 font-medium text-base">
               Tiiwa
             </span>
           </Link>

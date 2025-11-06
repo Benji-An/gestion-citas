@@ -15,7 +15,10 @@ import BookAppointment from './pages/Confirmacion_cita';
 import Payment from './pages/Pasarela_pago';
 import PaymentHistory from './pages/Historial_pagos';
 import ClientProfile from './pages/Perfil_clientes';
+import InicioProfesiona from './pages/inicio_profesional';
+import ProfessionalDashboard from './pages/Dashboard_profesional';
 import { Routes, Route } from 'react-router-dom';
+import InicioProfesional from './pages/inicio_profesional';
 
 function MainLayout() {
   return (
@@ -51,6 +54,9 @@ function App() {
       <Route path="/Buscar_profesional" element={<ProfessionalProfile />} />
       <Route path="/Confirmacion_cita" element={<BookAppointment />} />
       <Route path="/Pasarela_pago" element={<Payment />} />
+      {/* Rutas del profesional */}
+      <Route path="/inicio_profesional" element={<InicioProfesional />} />
+      <Route path="/Dashboard_profesional" element={<ProfessionalDashboard />} />
     </Routes>
   );
 }
