@@ -1,92 +1,16 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import ProfessionalNavbar from '../components/Navbar_profesional';
-import AvailabilityModal from '../components/Disponibilidad';
 
-const GoToDateModal = ({ isOpen, onClose, initialDate, onGo }) => {
-  const [date, setDate] = useState(initialDate || '');
-
-  useEffect(() => {
-    if (isOpen) {
-      setDate(initialDate || '');
-      const t = setTimeout(() => {
-        const el = document.getElementById('goto-date-input');
-        if (el) el.focus();
-      }, 120);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen, initialDate]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!date) return;
-    onGo(date);
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-5">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Ir a fecha</h3>
-        <p className="text-sm text-gray-600 mb-4">Introduce la fecha para ir a esa semana.</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="goto-date-input" className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
-            <input
-              id="goto-date-input"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded focus:ring-2 focus:ring-cyan-300 outline-none bg-gray-50"
-              required
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-1 rounded bg-cyan-600 hover:bg-cyan-700 text-white text-sm"
-            >
-              Ir
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-/* -------------------------
-   Agenda main component
-   ------------------------- */
-const HOURS = Array.from({ length: 13 }).map((_, i) => 8 + i); // 8..20
+const HOURS = Array.from({ length: 14 }).map((_, i) => 8 + i); 
+const HOUR_PX = 80; 
 const weekdayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
-const sampleAppointments = [
-  { id: 1, patient: 'Luisa Fernández', datetime: '2024-10-07T10:30:00', duration: 30, service: 'Limpieza Dental', status: 'confirmed' },
-  { id: 2, patient: 'Carlos Méndez', datetime: new Date().toISOString().slice(0,10) + 'T12:00:00', duration: 45, service: 'Revisión general', status: 'pending' },
-  { id: 3, patient: 'María Gómez', datetime: new Date().toISOString().slice(0,10) + 'T15:00:00', duration: 60, service: 'Consulta', status: 'confirmed' },
-];
-
-const sampleAvailabilities = [
-  { id: 'a1', datetime: new Date().toISOString().slice(0,10) + 'T09:00:00', duration: 120, notes: 'Disponibilidad mañana' },
-];
 
 function startOfWeek(date) {
   const d = new Date(date);
-  const day = d.getDay(); // 0 Sun .. 6 Sat
+  const day = d.getDay();
   const diffToMon = (day === 0 ? -6 : 1) - day;
   d.setDate(d.getDate() + diffToMon);
-  d.setHours(0,0,0,0);
+  d.setHours(0, 0, 0, 0);
   return d;
 }
 function addDays(date, n) {
@@ -95,344 +19,378 @@ function addDays(date, n) {
   return d;
 }
 function isoDate(dt) {
-  return dt.toISOString().slice(0,10);
+  return dt.toISOString().slice(0, 10);
 }
-function timeToHHMM(dtStr) {
-  const dt = new Date(dtStr);
-  return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function timeToMinutes(str) {
+  const [h, m] = str.split(':').map(Number);
+  return h * 60 + m;
 }
 
-const statusClass = (s) => {
-  if (s === 'confirmed') return 'bg-green-100 text-green-800';
-  if (s === 'pending') return 'bg-yellow-100 text-yellow-800';
-  if (s === 'cancelled') return 'bg-red-100 text-red-800';
-  return 'bg-gray-100 text-gray-700';
+
+const EditBlockModal = ({ open, initial, onClose, onSave }) => {
+  const [type, setType] = useState(initial?.type || 'available');
+  const [date, setDate] = useState(initial?.date || isoDate(new Date()));
+  const [start, setStart] = useState(initial?.start || '09:00');
+  const [end, setEnd] = useState(initial?.end || '10:00');
+  const [title, setTitle] = useState(initial?.title || '');
+
+  useEffect(() => {
+    if (open) {
+      setType(initial?.type || 'available');
+      setDate(initial?.date || isoDate(new Date()));
+      setStart(initial?.start || '09:00');
+      setEnd(initial?.end || '10:00');
+      setTitle(initial?.title || '');
+    }
+  }, [open, initial]);
+
+  if (!open) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const s = timeToMinutes(start);
+    const eM = timeToMinutes(end);
+    if (eM <= s) {
+      alert('La hora de fin debe ser posterior a la hora de inicio');
+      return;
+    }
+    onSave({
+      id: initial?.id || 'b' + Math.random().toString(36).slice(2, 9),
+      type,
+      date,
+      start,
+      end,
+      title: title || (type === 'appointment' ? 'Cita' : type === 'blocked' ? 'No disponible' : 'Disponible'),
+    });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-5">
+        <h3 className="text-lg font-semibold mb-3">Gestionar Bloque</h3>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Tipo</label>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setType('available')} className={`px-2 py-1 rounded text-sm ${type === 'available' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700'}`}>Disponible</button>
+              <button type="button" onClick={() => setType('appointment')} className={`px-2 py-1 rounded text-sm ${type === 'appointment' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700'}`}>Cita</button>
+              <button type="button" onClick={() => setType('blocked')} className={`px-2 py-1 rounded text-sm ${type === 'blocked' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700'}`}>No disponible</button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label className="text-sm text-gray-700">Fecha</label>
+              <input className="mt-1 w-full px-3 py-2 border rounded text-sm" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            </div>
+            <div>
+              <label className="text-sm text-gray-700">Título</label>
+              <input className="mt-1 w-full px-3 py-2 border rounded text-sm" type="text" placeholder="Ej. Consulta" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-sm text-gray-700">Inicio</label>
+              <input className="mt-1 w-full px-3 py-2 border rounded text-sm" type="time" value={start} onChange={(e) => setStart(e.target.value)} required />
+            </div>
+            <div>
+              <label className="text-sm text-gray-700">Fin</label>
+              <input className="mt-1 w-full px-3 py-2 border rounded text-sm" type="time" value={end} onChange={(e) => setEnd(e.target.value)} required />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={onClose} className="px-3 py-1 rounded bg-gray-100 text-sm">Cancelar</button>
+            <button type="submit" className="px-4 py-1 rounded bg-cyan-600 text-white text-sm">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
-const ProfessionalAgenda = () => {
+
+const SettingsPanel = ({ settings, onChange }) => {
+  const updateLimit = (index, field, val) => {
+    const ns = { ...settings };
+    ns.limits[index][field] = val;
+    onChange(ns);
+  };
+  const addLimit = () => {
+    const ns = { ...settings };
+    ns.limits.push({ value: 1, period: 'day' });
+    onChange(ns);
+  };
+  const removeLimit = (index) => {
+    const ns = { ...settings };
+    ns.limits.splice(index, 1);
+    onChange(ns);
+  };
+  const updateRange = (field, val) => {
+    const ns = { ...settings };
+    ns.range[field] = val;
+    onChange(ns);
+  };
+  const editBuffer = (id, patch) => {
+    const ns = { ...settings };
+    ns.buffers = ns.buffers.map(b => (b.id === id ? { ...b, ...patch } : b));
+    onChange(ns);
+  };
+  const addBuffer = () => {
+    const ns = { ...settings };
+    ns.buffers.push({ id: 'buf'+Math.random().toString(36).slice(2,6), start: '00:15', end: '00:15', label: 'Buffer' });
+    onChange(ns);
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-4 w-full max-w-sm">
+      <h4 className="font-semibold mb-3 text-gray-900">Configuración</h4>
+
+      <div className="mb-4">
+        <div className="text-sm font-medium text-gray-700 mb-2">Límites máximos</div>
+        <div className="space-y-2">
+          {settings.limits.map((l, i) => (
+            <div key={i} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
+              <input type="number" min="1" value={l.value} onChange={(e) => updateLimit(i, 'value', Number(e.target.value))} className="w-16 px-2 py-1 border rounded text-sm" />
+              <select value={l.period} onChange={(e) => updateLimit(i, 'period', e.target.value)} className="px-2 py-1 border rounded text-sm">
+                <option value="day">día</option>
+                <option value="week">semana</option>
+                <option value="month">mes</option>
+              </select>
+              <button type="button" onClick={() => removeLimit(i)} className="ml-auto text-red-500 text-xs">×</button>
+            </div>
+          ))}
+          <button type="button" onClick={addLimit} className="mt-2 text-sm text-cyan-600">+ Añadir límite</button>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="text-sm font-medium text-gray-700 mb-2">Rango de fechas</div>
+        <div className="text-xs text-gray-500 mb-2">Invitados pueden reservar</div>
+        <div className="flex gap-2 items-center">
+          <input type="number" min="0" value={settings.range.windowDays} onChange={(e) => updateRange('windowDays', Number(e.target.value))} className="w-20 px-2 py-1 border rounded text-sm" />
+          <span className="text-sm">días adelante</span>
+        </div>
+        <div className="text-xs text-gray-500 mt-3 mb-2">Aviso previo mínimo</div>
+        <div className="flex gap-2 items-center">
+          <input type="number" min="0" value={settings.range.minNoticeHours} onChange={(e) => updateRange('minNoticeHours', Number(e.target.value))} className="w-20 px-2 py-1 border rounded text-sm" />
+          <span className="text-sm">horas</span>
+        </div>
+      </div>
+
+      <div className="mb-2">
+        <div className="text-sm font-medium text-gray-700 mb-2">Buffers</div>
+        <div className="space-y-2">
+          {settings.buffers.map(b => (
+            <div key={b.id} className="flex items-center gap-2 bg-green-50 p-2 rounded border border-blue-100">
+              <div className="text-xs w-24">{b.start} – {b.end}</div>
+              <div className="text-xs text-gray-700 flex-1">{b.label}</div>
+              <button type="button" onClick={() => editBuffer(b.id, { label: prompt('Nuevo label:', b.label) || b.label })} className="text-cyan-600 text-sm">✎</button>
+            </div>
+          ))}
+        </div>
+        <button type="button" onClick={addBuffer} className="mt-2 text-sm text-cyan-600">+ Añadir buffer</button>
+      </div>
+    </div>
+  );
+};
+
+const TimeSlotPanel = ({ dateIso, slots, selected, onSelect, onConfirm }) => {
+  if (!dateIso) return null;
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-4 w-full max-w-sm">
+      <div className="mb-3">
+        <div className="text-sm text-gray-500">Selecciona hora</div>
+        <div className="font-semibold text-gray-900">{dateIso}</div>
+      </div>
+
+      <div className="space-y-2 max-h-64 overflow-auto">
+        {slots.length === 0 && <div className="text-sm text-gray-500">No hay huecos disponibles</div>}
+        {slots.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => onSelect(s)}
+            className={`w-full text-left px-3 py-2 rounded border text-sm ${selected === s ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-gray-50 text-gray-800 hover:bg-gray-100'}`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 flex gap-2">
+        <button type="button" onClick={() => onConfirm(selected)} disabled={!selected} className="flex-1 px-3 py-2 rounded bg-green-600 text-white disabled:opacity-50 text-sm">
+          Confirmar
+        </button>
+        <button type="button" onClick={() => onSelect(null)} className="px-3 py-2 rounded bg-gray-100 text-sm">Cancelar</button>
+      </div>
+    </div>
+  );
+};
+
+const Agenda_profesional = () => {
   const today = new Date();
   const [weekStart, setWeekStart] = useState(startOfWeek(today));
-  const [appointments, setAppointments] = useState(sampleAppointments);
-  const [availabilities, setAvailabilities] = useState(sampleAvailabilities);
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [modalInitial, setModalInitial] = useState(null);
-  const [selectedCell, setSelectedCell] = useState(null);
-  const [showOnlyFree, setShowOnlyFree] = useState(false);
 
-  // GoTo modal state (embedded)
-  const [isGoToOpen, setGoToOpen] = useState(false);
-  const [goToInitial, setGoToInitial] = useState(isoDate(today));
+  const [blocks, setBlocks] = useState([
+    { id: 'b1', type: 'available', date: isoDate(addDays(startOfWeek(today), 0)), start: '09:00', end: '11:00', title: 'Disponible' },
+    { id: 'b2', type: 'blocked', date: isoDate(addDays(startOfWeek(today), 1)), start: '09:30', end: '12:00', title: 'No disponible' },
+    { id: 'b3', type: 'appointment', date: isoDate(addDays(startOfWeek(today), 2)), start: '11:00', end: '12:00', title: 'Cita · J. Pérez' },
+    { id: 'b4', type: 'available', date: isoDate(addDays(startOfWeek(today), 2)), start: '13:00', end: '17:00', title: 'Disponible' },
+  ]);
 
-  const days = useMemo(() => Array.from({length:7}).map((_,i) => addDays(weekStart, i)), [weekStart]);
+  const [settings, setSettings] = useState({
+    limits: [
+      { value: 4, period: 'day' },
+      { value: 12, period: 'week' },
+      { value: 24, period: 'month' },
+    ],
+    range: { windowDays: 30, minNoticeHours: 4 },
+    buffers: [
+      { id: 'buf1', start: '08:45', end: '09:00', label: 'Buffer before meeting' },
+      { id: 'buf2', start: '10:45', end: '11:00', label: 'Buffer after meeting' },
+    ],
+  });
 
-  const appointmentsByDay = useMemo(() => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(isoDate(today));
+  const [availableSlots, setAvailableSlots] = useState(['10:00am', '11:00am', '13:00pm', '14:30pm', '16:00pm']);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+
+  const days = useMemo(() => Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i)), [weekStart]);
+
+  const blocksByDay = useMemo(() => {
     const map = {};
-    appointments.forEach((a) => {
-      const iso = a.datetime.slice(0,10);
-      if (!map[iso]) map[iso] = [];
-      map[iso].push(a);
+    blocks.forEach((b) => {
+      if (!map[b.date]) map[b.date] = [];
+      map[b.date].push(b);
     });
-    Object.keys(map).forEach(k => map[k].sort((x,y) => new Date(x.datetime) - new Date(y.datetime)));
+    Object.keys(map).forEach((k) => map[k].sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)));
     return map;
-  }, [appointments]);
+  }, [blocks]);
 
-  const availByDay = useMemo(() => {
-    const map = {};
-    availabilities.forEach((a) => {
-      const iso = a.datetime.slice(0,10);
-      if (!map[iso]) map[iso] = [];
-      map[iso].push(a);
-    });
-    return map;
-  }, [availabilities]);
-
-  const nextWeek = () => setWeekStart(prev => addDays(prev, 7));
-  const prevWeek = () => setWeekStart(prev => addDays(prev, -7));
+  const prevWeek = () => setWeekStart((ws) => addDays(ws, -7));
+  const nextWeek = () => setWeekStart((ws) => addDays(ws, 7));
   const goToThisWeek = () => setWeekStart(startOfWeek(new Date()));
 
-  const openNewAvailability = (dateIso, hour) => {
-    const dt = new Date(dateIso + 'T' + String(hour).padStart(2,'0') + ':00:00');
-    setModalInitial({ date: isoDate(dt), time: dt.toTimeString().slice(0,5), duration: 60 });
-    setModalOpen(true);
+  const openAdd = (dateISO) => {
+    setEditing(null);
+    setSelectedDate(dateISO || isoDate(today));
+    setIsModalOpen(true);
+  };
+  const openEdit = (block) => {
+    setEditing({ ...block });
+    setIsModalOpen(true);
+  };
+  const saveBlock = (payload) => {
+    setBlocks((prev) => {
+      const exists = prev.find((p) => p.id === payload.id);
+      if (exists) return prev.map((p) => (p.id === payload.id ? payload : p));
+      return [...prev, payload];
+    });
   };
 
-  const saveAvailability = (payload) => {
-    const id = 'a' + (Math.random().toString(36).slice(2,9));
-    const datetime = payload.date + 'T' + payload.time + ':00';
-    setAvailabilities(prev => [{ id, datetime, duration: payload.duration, notes: payload.notes }, ...prev]);
-  };
-
-  const removeAvailability = (id) => {
-    if (!confirm('Eliminar disponibilidad?')) return;
-    setAvailabilities(prev => prev.filter(a => a.id !== id));
-  };
-
-  const removeAppointment = (id) => {
-    if (!confirm('Eliminar cita?')) return;
-    setAppointments(prev => prev.filter(a => a.id !== id));
-  };
-
-  const toggleOnlyFree = () => setShowOnlyFree(v => !v);
-
-  const handleGoToDate = (iso) => {
-    try {
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) throw new Error('Fecha inválida');
-      setWeekStart(startOfWeek(d));
-      setSelectedCell(null);
-    } catch (err) {
-      console.error('Fecha inválida:', iso, err);
-      // fallback simple feedback (could be replaced by a toast)
-      alert('Fecha inválida');
-    }
-  };
-
-  // quick-book modal (in-place simple implementation)
-  const [isQuickBookOpen, setQuickBookOpen] = useState(false);
-  const [quickBookName, setQuickBookName] = useState('');
-  useEffect(() => {
-    if (isQuickBookOpen) {
-      setQuickBookName('');
-      const t = setTimeout(() => {
-        const el = document.getElementById('quick-book-input');
-        if (el) el.focus();
-      }, 120);
-      return () => clearTimeout(t);
-    }
-  }, [isQuickBookOpen]);
-
-  const openQuickBook = () => {
-    if (!selectedCell) { alert('Selecciona primero una celda'); return; }
-    setQuickBookOpen(true);
-  };
-
-  const handleQuickBook = (e) => {
-    e.preventDefault();
-    if (!quickBookName) return;
-    const id = Math.floor(Math.random()*100000);
-    const hh = String(selectedCell.hour).padStart(2,'0') + ':00:00';
-    const datetime = selectedCell.date + 'T' + hh;
-    setAppointments(prev => [{ id, patient: quickBookName, datetime, duration: 60, service: 'Consulta rápida', status: 'confirmed' }, ...prev]);
-    setQuickBookOpen(false);
+  const handleSelectSlot = (slot) => setSelectedSlot(slot);
+  const handleConfirmSlot = (slot) => {
+    if (!slot) return;
+    const id = 'b' + Math.random().toString(36).slice(2, 9);
+    setBlocks(prev => [{ id, type: 'appointment', date: selectedDate, start: slot, end: slot, title: 'Cita rápida' }, ...prev]);
+    setSelectedSlot(null);
+    alert('Reservado: ' + selectedDate + ' ' + slot);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <ProfessionalNavbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="mb-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+        <div className="mb-4 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-            <p className="text-sm text-gray-600 mt-1">Organiza tu semana y gestiona franjas horarias y citas.</p>
+            <h1 className="text-2xl font-bold leading-tight">Agenda Profesional</h1>
+            <p className="text-sm text-gray-600 mt-1">Configura límites, rango y buffers. Selecciona huecos y confirma.</p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button onClick={prevWeek} className="px-2 py-1 text-sm rounded bg-white border hover:shadow">Anterior</button>
-            <button onClick={goToThisWeek} className="px-2 py-1 text-sm rounded bg-white border hover:shadow">Esta semana</button>
-            <button onClick={nextWeek} className="px-2 py-1 text-sm rounded bg-white border hover:shadow">Siguiente</button>
-          </div>
-        </header>
-
-        {/* --- Acción toolbar (moved to top for intuition) --- */}
-        <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => { setModalInitial({ date: isoDate(today), time: today.toTimeString().slice(0,5), duration: 60 }); setModalOpen(true); }}
-              className="px-3 py-1 text-sm bg-cyan-600 text-white rounded hover:bg-cyan-700"
-            >
-              Añadir disponibilidad
-            </button>
-
-            <button
-              onClick={openQuickBook}
-              className="px-3 py-1 text-sm bg-green-50 text-green-700 rounded hover:bg-green-100"
-            >
-              Reservar (rápido)
-            </button>
-
-            <button
-              onClick={() => { setGoToInitial(isoDate(today)); setGoToOpen(true); }}
-              className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200"
-            >
-              Ir a fecha
-            </button>
-
-            <button
-              onClick={() => {
-                const id = prompt('ID de disponibilidad a eliminar (ej. a1):');
-                if (!id) return;
-                removeAvailability(id);
-              }}
-              className="px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100"
-            >
-              Eliminar disponibilidad
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-gray-600">
-              <input type="checkbox" checked={showOnlyFree} onChange={toggleOnlyFree} className="form-checkbox" />
-              Mostrar solo huecos libres
-            </label>
-
-            <div className="text-sm text-gray-500">
-              {selectedCell ? `Seleccionada: ${selectedCell.date} ${String(selectedCell.hour).padStart(2,'0')}:00` : 'Ninguna celda seleccionada'}
-            </div>
+          <div className="flex items-center gap-3">
+            <button onClick={prevWeek} className="px-3 py-2 bg-white border rounded shadow-sm text-sm">Anterior</button>
+            <button onClick={goToThisWeek} className="px-3 py-2 bg-white border rounded shadow-sm text-sm">Hoy</button>
+            <button onClick={nextWeek} className="px-3 py-2 bg-white border rounded shadow-sm text-sm">Siguiente</button>
+            <button onClick={() => openAdd(isoDate(today))} className="ml-4 px-4 py-2 bg-emerald-600 text-white rounded text-sm shadow">+ Añadir Disponibilidad</button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-8 gap-6">
-          {/* Hours column */}
-          <div className="lg:col-span-1">
-            <div className="text-sm text-gray-500 mb-2">Hora</div>
-            <div className="bg-white rounded-lg shadow-sm p-2">
-              {HOURS.map(h => (
-                <div key={h} className="h-12 text-xs text-gray-600 flex items-center justify-center border-b last:border-b-0">
-                  {String(h).padStart(2,'0')}:00
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Week grid */}
-          <div className="lg:col-span-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex gap-2">
-                {days.map((d, idx) => (
-                  <div key={idx} className="text-sm text-gray-700 w-28 text-center">
-                    <div className="font-medium">{weekdayNames[idx]}</div>
-                    <div className="text-xs text-gray-500">{d.getDate()} {d.toLocaleString('es-ES', { month: 'short' })}</div>
+        <div className="flex gap-6">
+          {/* Timeline izquierda */}
+          <div className="flex-1 bg-white rounded-lg shadow-sm overflow-x-auto">
+            <div className="flex">
+              {/* Columna de horas */}
+              <div className="w-20 flex-shrink-0 border-r">
+                <div className="h-16 flex items-center justify-center text-xs text-gray-500 border-b">Hora</div>
+                {HOURS.map((h) => (
+                  <div key={h} style={{ height: HOUR_PX }} className="flex items-center justify-end pr-3 border-b text-sm text-gray-600">
+                    {String(h).padStart(2, '0')}:00
                   </div>
                 ))}
               </div>
 
-              <div className="flex items-center gap-3">
-                {/* placeholder for future quick filters */}
-              </div>
-            </div>
+              {/* Columnas de días */}
+              {days.map((d, idx) => {
+                const iso = isoDate(d);
+                const dayBlocks = blocksByDay[iso] || [];
 
-            <div className="bg-white rounded-lg shadow-sm p-2 overflow-x-auto">
-              <div className="flex gap-2">
-                {days.map((d, di) => {
-                  const iso = isoDate(d);
-                  const appts = appointmentsByDay[iso] || [];
-                  const avails = availByDay[iso] || [];
+                return (
+                  <div key={iso} className="flex-1 min-w-[140px] border-r last:border-r-0">
+                    {/* Header día */}
+                    <div className="h-16 flex flex-col items-center justify-center border-b bg-gray-50">
+                      <div className="text-sm font-semibold">{weekdayNames[idx]}</div>
+                      <div className="text-xs text-gray-500">{d.getDate()} {d.toLocaleString('es-ES', { month: 'short' })}</div>
+                    </div>
 
-                  return (
-                    <div key={iso} className="flex-shrink-0 w-28 border-l last:border-r p-1">
-                      {HOURS.map((h) => {
-                        const slotStart = new Date(iso + 'T' + String(h).padStart(2,'0') + ':00:00');
-                        const slotEnd = new Date(slotStart.getTime() + 60*60*1000);
-                        const appt = appts.find(a => {
-                          const aStart = new Date(a.datetime);
-                          const aEnd = new Date(aStart.getTime() + (a.duration||60)*60000);
-                          return aStart < slotEnd && aEnd > slotStart;
-                        });
-                        const avail = avails.find(a => {
-                          const aStart = new Date(a.datetime);
-                          const aEnd = new Date(aStart.getTime() + (a.duration||60)*60000);
-                          return aStart < slotEnd && aEnd > slotStart;
-                        });
+                    {/* Celdas de hora */}
+                    <div className="relative">
+                      {HOURS.map((h) => (
+                        <div key={h} style={{ height: HOUR_PX }} className="border-b" />
+                      ))}
 
-                        if (showOnlyFree && (appt || !avail)) {
-                          return <div key={h} className="h-12 mb-1" />;
-                        }
+                      {/* Bloques posicionados absolutamente */}
+                      {dayBlocks.map((b) => {
+                        const topMinutes = timeToMinutes(b.start) - HOURS[0] * 60;
+                        const durationMinutes = Math.max(30, timeToMinutes(b.end) - timeToMinutes(b.start));
+                        const topPx = (topMinutes / 60) * HOUR_PX;
+                        const heightPx = (durationMinutes / 60) * HOUR_PX;
+                        const colorClass = b.type === 'available' ? 'bg-green-100 border-green-300' : b.type === 'appointment' ? 'bg-blue-100 border-blue-300' : 'bg-red-100 border-red-300';
 
                         return (
                           <div
-                            key={h}
-                            onClick={() => setSelectedCell({ date: iso, hour: h })}
-                            className={`h-12 mb-1 rounded px-1 cursor-pointer transition ${appt ? 'bg-red-50 border border-red-100' : avail ? 'bg-green-50 border border-green-100' : 'hover:bg-gray-50'}`}
-                            title={appt ? `${appt.patient} · ${appt.service}` : avail ? `Disponibilidad: ${avail.notes||''}` : 'Click para añadir disponibilidad'}
+                            key={b.id}
+                            onDoubleClick={() => openEdit(b)}
+                            className={`absolute left-2 right-2 rounded-lg p-2 border ${colorClass} shadow-sm cursor-pointer`}
+                            style={{ top: topPx, height: Math.max(36, heightPx - 8) }}
+                            title={`${b.title} ${b.start} - ${b.end}`}
                           >
-                            {appt ? (
-                              <div className="text-[11px] text-red-700 font-medium truncate">{timeToHHMM(appt.datetime)} · {appt.patient}</div>
-                            ) : avail ? (
-                              <div className="text-[11px] text-green-700 font-medium truncate">Libre · {timeToHHMM(avail.datetime)}</div>
-                            ) : (
-                              <div className="text-[11px] text-gray-400 truncate">—</div>
-                            )}
+                            <div className="text-xs font-semibold truncate">{b.title}</div>
+                            <div className="text-[10px] text-gray-600">{b.start} - {b.end}</div>
                           </div>
                         );
                       })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-
-          {/* Small right column: availabilities list (kept compact) */}
-          <aside className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-3">
-              <h3 className="font-semibold text-gray-900 text-sm mb-1">Disponibilidades</h3>
-              <div className="text-xs text-gray-500 mt-2 space-y-2">
-                {availabilities.length === 0 && <div className="text-gray-400">No hay disponibilidades creadas</div>}
-                {availabilities.map(a => (
-                  <div key={a.id} className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-xs">{a.datetime.slice(0,10)}</div>
-                      <div className="text-gray-500 text-xs">{timeToHHMM(a.datetime)} · {a.duration}min</div>
-                    </div>
-                    <button onClick={() => removeAvailability(a.id)} className="text-red-500 text-xs">Eliminar</button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-3 text-xs text-gray-400">
-                Tip: haz click en una celda para seleccionar día/hora.
-              </div>
-            </div>
-          </aside>
+          <div className="w-80 flex-shrink-0 space-y-4">
+            <SettingsPanel settings={settings} onChange={setSettings} />
+            <TimeSlotPanel dateIso={selectedDate} slots={availableSlots} selected={selectedSlot} onSelect={handleSelectSlot} onConfirm={handleConfirmSlot} />
+          </div>
         </div>
       </div>
 
-      <AvailabilityModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={saveAvailability}
-        initial={modalInitial}
-      />
-
-      <GoToDateModal
-        isOpen={isGoToOpen}
-        onClose={() => setGoToOpen(false)}
-        initialDate={goToInitial}
-        onGo={(iso) => handleGoToDate(iso)}
-      />
-
-      {/* Quick-book modal (simple, inline) */}
-      {isQuickBookOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-5">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Reservar (rápido)</h3>
-            <p className="text-sm text-gray-600 mb-4">Reserva rápida para la celda seleccionada.</p>
-
-            <form onSubmit={handleQuickBook} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del paciente</label>
-                <input
-                  id="quick-book-input"
-                  type="text"
-                  value={quickBookName}
-                  onChange={(e) => setQuickBookName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded focus:ring-2 focus:ring-cyan-300 outline-none bg-gray-50"
-                  placeholder="Ej. Juan Pérez"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setQuickBookOpen(false)} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm">Cancelar</button>
-                <button type="submit" className="px-4 py-1 rounded bg-cyan-600 hover:bg-cyan-700 text-white text-sm">Reservar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <EditBlockModal open={isModalOpen} initial={editing} onClose={() => { setIsModalOpen(false); setEditing(null); }} onSave={saveBlock} />
     </div>
   );
 };
 
-export default ProfessionalAgenda;
+export default Agenda_profesional;

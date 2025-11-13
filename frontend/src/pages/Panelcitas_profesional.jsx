@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ProfessionalNavbar from '../components/Navbar_profesional';
 
+
 const sampleAppointments = [
   { id: 1, name: 'Luisa Fernández', date: '2024-10-05', time: '10:30', service: 'Limpieza Dental', status: 'confirmed' },
   { id: 2, name: 'Carlos Méndez', date: new Date().toISOString().slice(0,10), time: '12:00', service: 'Revisión general', status: 'pending' },
@@ -73,11 +74,14 @@ const ProfessionalAppointments = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ProfessionalNavbar />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Panel de Citas</h1>
           <p className="text-gray-600 mt-1">Aquí tienes un vistazo a tus próximas citas.</p>
         </header>
+
         <div className="flex gap-6">
           <div className="flex-1">
             <div className="bg-white rounded-xl shadow-sm p-6">
@@ -152,6 +156,8 @@ const ProfessionalAppointments = () => {
               </div>
             </div>
           </div>
+
+          {/* Right column: upcoming list */}
           <aside className="w-96">
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
@@ -173,36 +179,17 @@ const ProfessionalAppointments = () => {
                       </span>
 
                       <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(apt)}
-                          className="p-2 text-gray-600 hover:bg-gray-100 rounded"
-                          aria-label="Editar cita"
-                        >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" />
-                            <path d="M20.71 7.04a1 1 0 000-1.41L18.37 3.29a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                          </svg>
+                        <button type="button" onClick={() => handleEdit(apt)} className="p-2 text-gray-500 hover:bg-gray-50 rounded">
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M15.232 5.232l3.536 3.536M4 21l7.607-1.267L21 11.34 12.607 4 4 21z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(apt)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded"
-                          aria-label="Eliminar cita"
-                        >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M3 6h18" />
-                            <path d="M8 6l1-2h6l1 2" />
-                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                            <path d="M10 11v6" />
-                            <path d="M14 11v6" />
-                          </svg>
+                        <button type="button" onClick={() => handleDelete(apt)} className="p-2 text-gray-500 hover:bg-gray-50 rounded">
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6M10 6V4a2 2 0 012-2h0a2 2 0 012 2v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         </button>
                       </div>
                     </div>
                   </div>
                 ))}
+
                 {upcoming.length === 0 && (
                   <div className="text-sm text-gray-500 p-4 rounded bg-gray-50">No hay próximas citas</div>
                 )}

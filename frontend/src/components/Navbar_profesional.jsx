@@ -14,7 +14,7 @@ const ProfessionalNavbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/profesional" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Dashboard</Link>
+            <Link to="/profesional/dashboard" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Panel de Citas</Link>
             <Link to="/profesional/agenda" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Agenda</Link>
             <Link to="/profesional/pacientes" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Pacientes</Link>
             <Link to="/profesional/pagos" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Pagos</Link>
@@ -29,7 +29,6 @@ const ProfessionalNavbar = () => {
 
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
                 <Link to="/profesional/perfil" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</Link>
-                <Link to="/profesional/configuracion" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</Link>
                 <hr className="my-1" />
                 <Link to="/" className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Cerrar Sesión</Link>
               </div>

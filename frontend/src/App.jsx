@@ -4,20 +4,31 @@ import Benefits from './components/Benefits';
 import Testimonials from './components/Opinions';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
+// Rutas de autenticación
 import Login from './pages/login_clientes';
 import Register from './pages/registro_clientes';
 import InicioClientes from './pages/inicio_clientes';
 import ClientDashboard from './pages/Dashboard_cliente';
 import ClientAppointments from './pages/Citas_cliente';
 import ClientFavorites from './pages/Favorites_cliente';
-import ProfessionalProfile from './pages/Buscar_porfesional';
+import ProfessionalSearch from './pages/Buscar_porfesional';
 import BookAppointment from './pages/Confirmacion_cita';
 import Payment from './pages/Pasarela_pago';
 import PaymentHistory from './pages/Historial_pagos';
 import ClientProfile from './pages/Perfil_clientes';
-import InicioProfesional from './pages/inicio_profesional';
-import ProfessionalDashboard from './pages/Dashboard_profesional';
-import ProfessionalAgenda from './pages/Agenda_profesional';
+// Rutas del profesional
+import ProfessionalAppointments from './pages/inicio_profesional';
+import ProfessionalDashboard from './pages/Panelcitas_profesional';
+import Agenda_profesional from './pages/Agenda_profesional';
+import ProfessionalPatients from './pages/Paciente_profesional';
+import ProfessionalPayments from './pages/Pagos_profesional';
+import ProfessionalProfile from './pages/perfil_profesional';
+// Rutas del administrador
+import InicioAdmin from './pages/inicio_admin';
+import DashboardAdmin from './pages/Dashboard_admin';
+import AdminProfessionals from './pages/Admin_profesionales';
+import AdminPatients from './pages/Admin_cliente';
+import AdminAppointments from './pages/Admin_citas';
 import { Routes, Route } from 'react-router-dom';
 
 function MainLayout() {
@@ -30,7 +41,7 @@ function MainLayout() {
       <Benefits />
       <Testimonials />
       <FAQ />
-      <Footer />
+      <Footer /> 
     </div>
   );
 }
@@ -51,14 +62,23 @@ function App() {
       <Route path="/cliente/favoritos" element={<ClientFavorites />} />
       <Route path="/cliente/pagos" element={<PaymentHistory />} />
       <Route path="/cliente/perfil" element={<ClientProfile />} />
-      <Route path="/Buscar_profesional" element={<ProfessionalProfile />} />
+  <Route path="/Buscar_profesional" element={<ProfessionalSearch />} />
       <Route path="/Confirmacion_cita" element={<BookAppointment />} />
       <Route path="/Pasarela_pago" element={<Payment />} />
       {/* Rutas del profesional */}
-      <Route path="/inicio_profesional" element={<InicioProfesional />} />
-      <Route path="/Dashboard_profesional" element={<ProfessionalDashboard />} />
-      <Route path="/profesional" element={<ProfessionalDashboard />} />
-      <Route path="/profesional/agenda" element={<ProfessionalAgenda />} />
+      <Route path="/inicio_profesional" element={<ProfessionalAppointments />} />
+      <Route path="/Panelcitas_profesional" element={<ProfessionalDashboard />} />
+      <Route path="/profesional/dashboard" element={<ProfessionalDashboard />} />
+       <Route path="/profesional/agenda" element={<Agenda_profesional />} />
+      <Route path="/profesional/pacientes" element={<ProfessionalPatients />} />
+      <Route path="/profesional/pagos" element={<ProfessionalPayments />} />
+      <Route path="/profesional/perfil" element={<ProfessionalProfile />} />
+      {/* Rutas del administrador */}
+      <Route path="/inicio_admin" element={<InicioAdmin />} />
+      <Route path="/Dashboard_admin" element={<DashboardAdmin />} />
+      <Route path="/admin/profesionales" element={<AdminProfessionals />} />
+      <Route path="/admin/pacientes" element={<AdminPatients />} />
+      <Route path="/admin/citas" element={<AdminAppointments />} />
     </Routes>
   );
 }
