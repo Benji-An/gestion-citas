@@ -1,16 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ProfessionalNavbar from '../components/Navbar_profesional.jsx';
 
-/*
-  ProfessionalPatients.jsx
-  - Vista de gestión de pacientes para el profesional
-  - Lista de pacientes con búsqueda, filtros y paginación
-  - Modal inline para ver detalles / editar / agregar paciente
-  - Tarjetas con foto, nombre, contacto, última cita, estado
-  - Todo en un solo archivo (sin crear archivos nuevos)
-  - Tailwind CSS
-*/
-
 /* ---------- Modal de Paciente (in-file) ---------- */
 const PatientModal = ({ open, patient, onClose, onSave }) => {
   const [formData, setFormData] = useState({

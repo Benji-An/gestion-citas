@@ -1,14 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-/*
-  AdminSidebar.jsx
-  - Barra de navegación lateral para administrador
-  - Fixed position en el lado izquierdo
-  - Links a todas las secciones
-  - Paleta: green/emerald
-*/
-
 const AdminSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();

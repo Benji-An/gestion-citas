@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import AdminSidebar from '../components/Slider_admin.jsx';
 
-/*
-  AdminDashboard.jsx
-  - Dashboard principal del administrador
-  - Métricas generales del sistema
-  - Actividad reciente
-  - Paleta: green/emerald
-*/
-
 const AdminDashboard = () => {
   const stats = {
     totalProfessionals: 24,
