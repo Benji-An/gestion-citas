@@ -1,7 +1,5 @@
 import React from "react";
 
-
-
 function InicioAdmin() {
   return (
     <div className="min-h-screen bg-gray-100">

@@ -23,3 +23,11 @@ Puede que tengas una confusión con los archivos Buscar_profesional.jsx y Dashbo
 
 Los archivos Inicio_clientes.jsx e Inicio_profesionales.jsx
 - Solo es para poner el Navbar_cliente y el Navbar_profesional junto con los dashboards que son la vista principal
+
+Para ingresar al admin utiliza esta ruta - http://localhost:5173/Dashboard_admin
+Ya cuando hagas lo del login pues lo acomodas
+
+Utiliza los path del App.jsx para buscar cada apartado los copias y pegas depues el localhost
+Ejemplo: http://localhost:5173/Buscar_profesional <- asi
+
+

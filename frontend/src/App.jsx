@@ -4,7 +4,7 @@ import Benefits from './components/Benefits';
 import Testimonials from './components/Opinions';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
-// Rutas de autenticación
+// Rutas del cliente
 import Login from './pages/login_clientes';
 import Register from './pages/registro_clientes';
 import InicioClientes from './pages/inicio_clientes';
