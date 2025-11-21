@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List
+import os
 
 from database import get_db
 from models import Pago, Cita, User, PerfilProfesional, EstadoPago
@@ -303,7 +304,8 @@ def crear_pago_con_paypal(
     db.refresh(nuevo_pago)
     
     # URL simulada de PayPal - redirige directamente a la página de éxito
-    approval_url = f"http://localhost:5173/pago-completado?paymentId={payment_id}&PayerID=SIMULATED-PAYER-ID&cita_id={request.cita_id}"
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    approval_url = f"{frontend_url}/pago-completado?paymentId={payment_id}&PayerID=SIMULATED-PAYER-ID&cita_id={request.cita_id}"
     
     return {
         "pago_id": nuevo_pago.id,

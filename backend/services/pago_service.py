@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from datetime import datetime
 import uuid
+import os
 
 from models import Pago, Cita, User, PerfilProfesional, EstadoPago
 
@@ -42,7 +43,8 @@ class PagoService:
         db.refresh(nuevo_pago)
         
         # URL simulada - redirige directamente a éxito
-        approval_url = f"http://localhost:5173/pago-completado?paymentId={payment_id}&PayerID=SIMULATED-PAYER-ID&cita_id={cita_id}"
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+        approval_url = f"{frontend_url}/pago-completado?paymentId={payment_id}&PayerID=SIMULATED-PAYER-ID&cita_id={cita_id}"
         
         return {
             "pago_id": nuevo_pago.id,
