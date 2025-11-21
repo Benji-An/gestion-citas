@@ -186,6 +186,57 @@ async def list_users(
     return users
 
 
+@router.post("/admin/crear-profesional", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
+async def admin_crear_profesional(
+    user_data: UserCreate,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Permite al administrador crear un nuevo profesional
+    
+    Solo accesible por usuarios con tipo_usuario = 'admin'
+    """
+    # Verificar que el usuario actual sea admin
+    user = db.query(User).filter(User.email == current_user.email).first()
+    
+    if not user or user.tipo_usuario != TipoUsuario.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden crear profesionales"
+        )
+    
+    # Verificar si el email ya existe
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El email ya está registrado"
+        )
+    
+    # Forzar tipo de usuario a profesional
+    hashed_password = get_password_hash(user_data.password)
+    
+    db_user = User(
+        email=user_data.email,
+        hashed_password=hashed_password,
+        nombre=user_data.nombre,
+        apellido=user_data.apellido,
+        telefono=user_data.telefono,
+        tipo_usuario=TipoUsuario.PROFESIONAL,
+        is_active=True
+    )
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    # Crear notificación de bienvenida
+    notificar_bienvenida_usuario(db, db_user)
+    
+    return db_user
+
+
 @router.put("/cambiar-contrasena")
 async def cambiar_contrasena(
     password_data: dict,
