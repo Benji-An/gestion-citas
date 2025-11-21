@@ -92,7 +92,7 @@ const ProfessionalDashboard = () => {
         return;
       }
 
-      const API_URL = 'http://localhost:8000';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
       // Cargar estadísticas
       const responseStats = await fetch(`${API_URL}/api/profesionales/dashboard/estadisticas`, {

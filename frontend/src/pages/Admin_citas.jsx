@@ -15,10 +15,11 @@ const AdminCitas = () => {
   const cargarCitas = async () => {
     setLoading(true);
     try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const token = localStorage.getItem('token');
       const url = filtroEstado === 'todas' 
-        ? 'http://localhost:8000/api/citas/admin/todas'
-        : `http://localhost:8000/api/citas/admin/todas?estado=${filtroEstado}`;
+        ? `${API_URL}/api/citas/admin/todas`
+        : `${API_URL}/api/citas/admin/todas?estado=${filtroEstado}`;
       
       const response = await fetch(url, {
         headers: {

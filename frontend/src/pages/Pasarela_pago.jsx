@@ -87,8 +87,9 @@ const Payment = () => {
 
     try {
       if (paymentMethod === 'paypal') {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         // Redirigir a PayPal
-        const response = await fetch('http://localhost:8000/api/pagos/paypal/crear-pago', {
+        const response = await fetch(`${API_URL}/api/pagos/paypal/crear-pago`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -46,7 +46,7 @@ const ProfessionalAppointments = () => {
         return;
       }
 
-      const API_URL = 'http://localhost:8000';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const response = await fetch(`${API_URL}/api/profesionales/dashboard/citas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -71,7 +71,7 @@ const ProfessionalAppointments = () => {
   const actualizarEstado = async (citaId, nuevoEstado) => {
     try {
       const token = localStorage.getItem('token');
-      const API_URL = 'http://localhost:8000';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       
       const response = await fetch(
         `${API_URL}/api/profesionales/dashboard/citas/${citaId}/estado?nuevo_estado=${nuevoEstado}`,

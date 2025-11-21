@@ -21,8 +21,9 @@ const PagoCompletado = () => {
       }
 
       try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         const response = await fetch(
-          `http://localhost:8000/api/pagos/paypal/ejecutar-pago?payment_id=${paymentId}&payer_id=${payerId}`,
+          `${API_URL}/api/pagos/paypal/ejecutar-pago?payment_id=${paymentId}&payer_id=${payerId}`,
           {
             method: 'POST',
             headers: {
