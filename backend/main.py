@@ -19,6 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         FRONTEND_URL,  # URL del frontend en producción (de variable de entorno)
+        "https://gestion-citas-gules.vercel.app",  # Vercel
         "https://main.d1gthws0gcxzf3.amplifyapp.com",  # AWS Amplify
         "https://mipropiedad.xyz",  # Dominio principal
         "https://www.mipropiedad.xyz",  # Con www
