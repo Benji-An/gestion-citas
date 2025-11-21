@@ -10,10 +10,12 @@ from schemas import TokenData
 from services.profesional_service import (
     obtener_estadisticas_profesional,
     obtener_proximas_citas,
+    obtener_citas_profesional,
     obtener_disponibilidad_profesional,
     crear_disponibilidad,
     actualizar_disponibilidad,
-    eliminar_disponibilidad
+    eliminar_disponibilidad,
+    actualizar_estado_cita
 )
 
 router = APIRouter(prefix="/api/profesionales", tags=["Profesionales"])
