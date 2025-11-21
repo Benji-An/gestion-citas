@@ -8,6 +8,15 @@ const AdminProfesionales = () => {
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    telefono: ''
+  });
+  const [creando, setCreando] = useState(false);
 
   useEffect(() => {
     cargarProfesionales();
@@ -42,6 +51,46 @@ const AdminProfesionales = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const crearProfesional = async (e) => {
+    e.preventDefault();
+    setCreando(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/auth/admin/crear-profesional`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Error al crear profesional');
+      }
+
+      const nuevoProfesional = await response.json();
+      setProfesionales([...profesionales, nuevoProfesional]);
+      setShowModal(false);
+      setFormData({ nombre: '', apellido: '', email: '', password: '', telefono: '' });
+      alert('Profesional creado exitosamente');
+    } catch (error) {
+      console.error('Error:', error);
+      alert(error.message);
+    } finally {
+      setCreando(false);
+    }
+  };
+
   const profesionalesFiltrados = profesionales.filter(prof => {
     const cumpleBusqueda = 
       prof.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -62,9 +111,20 @@ const AdminProfesionales = () => {
 
       <div className="flex-1 ml-64">
         <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-          <div className="px-8 py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Profesionales</h1>
-            <p className="text-sm text-gray-600">Administra los profesionales del sistema</p>
+          <div className="px-8 py-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Gestión de Profesionales</h1>
+              <p className="text-sm text-gray-600">Administra los profesionales del sistema</p>
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Crear Profesional
+            </button>
           </div>
         </div>
 
@@ -179,6 +239,111 @@ const AdminProfesionales = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal Crear Profesional */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">Crear Nuevo Profesional</h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={crearProfesional} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none"
+                  placeholder="Juan"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
+                <input
+                  type="text"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none"
+                  placeholder="Pérez"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none"
+                  placeholder="profesional@ejemplo.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none"
+                  placeholder="3001234567"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  minLength={6}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none"
+                  placeholder="Mínimo 6 caracteres"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  disabled={creando}
+                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={creando}
+                  className="flex-1 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {creando ? 'Creando...' : 'Crear Profesional'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
