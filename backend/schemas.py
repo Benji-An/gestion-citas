@@ -19,7 +19,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    tipo_usuario: str  # 'cliente', 'profesional', 'admin'
+    tipo_usuario: Optional[str] = None  # 'cliente', 'profesional', 'admin'
 
 
 class UserLogin(BaseModel):

@@ -214,7 +214,7 @@ async def admin_crear_profesional(
             detail="El email ya está registrado"
         )
     
-    # Forzar tipo de usuario a profesional
+    # Forzar tipo de usuario a profesional (ignorar si viene en user_data)
     hashed_password = get_password_hash(user_data.password)
     
     db_user = User(
@@ -223,7 +223,7 @@ async def admin_crear_profesional(
         nombre=user_data.nombre,
         apellido=user_data.apellido,
         telefono=user_data.telefono,
-        tipo_usuario=TipoUsuario.PROFESIONAL,
+        tipo_usuario=TipoUsuario.PROFESIONAL,  # Siempre profesional
         is_active=True
     )
     
