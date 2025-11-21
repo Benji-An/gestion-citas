@@ -231,8 +231,11 @@ async def admin_crear_profesional(
     db.commit()
     db.refresh(db_user)
     
-    # Crear notificación de bienvenida
-    notificar_bienvenida_usuario(db, db_user)
+    # Crear notificación de bienvenida (no fallar si hay error)
+    try:
+        notificar_bienvenida_usuario(db, db_user)
+    except Exception as e:
+        print(f"Advertencia: No se pudo crear notificación de bienvenida: {e}")
     
     return db_user
 
