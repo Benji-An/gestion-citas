@@ -1,71 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ClientNavbar from '../components/Navbar_cliente';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { getProfesional, agregarFavorito, eliminarFavorito, getMisFavoritos } from '../api';
 
 const ProfessionalProfile = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const profesionalId = searchParams.get('id');
+  
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState('sin seleccionar');
-  const [currentMonth, setCurrentMonth] = useState(selectedDate ? selectedDate.getMonth() : new Date().getMonth()); // Junio (0-indexed)
-  const [currentYear, setCurrentYear] = useState(selectedDate ? selectedDate.getFullYear() : new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [professional, setProfessional] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  const professional = {
-    name: "Dra. Isabel Martínez",
-    specialty: "Psicóloga Clínica",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-    description: "Licenciada en Psicología con más de 10 años de experiencia en terapia cognitivo-conductual y terapia de pareja. Mi enfoque es crear un espacio seguro y de confianza para el crecimiento personal.",
-    rating: 4.9,
-    reviews: 124
-  };
+  useEffect(() => {
+    if (!profesionalId) {
+      setError('No se proporcionó ID del profesional');
+      setLoading(false);
+      return;
+    }
+    cargarProfesional();
+    verificarFavorito();
+  }, [profesionalId]);
 
-  // Generar un id/clave simple para persistir favorito en localStorage
-  const professionalId = professional.name
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
-
-  const [isFavorited, setIsFavorited] = useState(() => {
+  const cargarProfesional = async () => {
     try {
-      return localStorage.getItem(`fav_${professionalId}`) === 'true';
-    } catch (e) {
-      return false;
+      setLoading(true);
+      const data = await getProfesional(profesionalId);
+      setProfessional(data);
+    } catch (err) {
+      console.error('Error al cargar profesional:', err);
+      setError(err.message || 'Error al cargar el perfil del profesional');
+    } finally {
+      setLoading(false);
     }
-  });
-
-  const toggleFavorite = () => {
-    setIsFavorited((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(`fav_${professionalId}`, next.toString());
-      } catch (e) {
-        // ignore storage errors
-      }
-      return next;
-    });
   };
 
-  const services = [
-    {
-      id: 1,
-      name: "Consulta Inicial",
-      description: "Sesión completa para evaluar tus necesidades y definir un plan de acción.",
-      price: "$80",
-      duration: "60 min"
-    },
-    {
-      id: 2,
-      name: "Sesión de Seguimiento",
-      description: "Sesión de 45 minutos para dar continuidad a tu plan de tratamiento.",
-      price: "$60",
-      duration: "45 min"
-    },
-    {
-      id: 3,
-      name: "Terapia de Pareja",
-      description: "Sesión de una hora para que las parejas aborden sus desafíos.",
-      price: "$120",
-      duration: "60 min"
+  const verificarFavorito = async () => {
+    try {
+      const favoritos = await getMisFavoritos();
+      const esFavorito = favoritos.some(fav => fav.profesional_id === parseInt(profesionalId));
+      setIsFavorited(esFavorito);
+    } catch (err) {
+      console.error('Error al verificar favoritos:', err);
     }
-  ];
+  };
+
+  const toggleFavorite = async () => {
+    try {
+      if (isFavorited) {
+        await eliminarFavorito(profesionalId);
+        setIsFavorited(false);
+      } else {
+        await agregarFavorito(profesionalId);
+        setIsFavorited(true);
+      }
+    } catch (err) {
+      alert(err.message || 'Error al actualizar favoritos');
+    }
+  };
 
   const reviews = [
     {
@@ -171,6 +168,36 @@ const ProfessionalProfile = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ClientNavbar />
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !professional) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ClientNavbar />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <p className="text-red-600 mb-4">{error || 'Profesional no encontrado'}</p>
+            <button
+              onClick={() => navigate('/cliente')}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Volver al inicio
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <ClientNavbar />
@@ -182,21 +209,59 @@ const ProfessionalProfile = () => {
             {/* Header del profesional */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-start space-x-6">
-                <img 
-                  src={professional.image}
-                  alt={professional.name}
-                  className="w-32 h-32 rounded-full object-cover"
-                />
+                {professional.foto_url ? (
+                  <img 
+                    src={professional.foto_url}
+                    alt={professional.nombre_completo}
+                    className="w-32 h-32 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
+                    <span className="text-4xl font-bold text-white">
+                      {professional.nombre?.[0]?.toUpperCase()}{professional.apellido?.[0]?.toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {professional.name}
+                    {professional.nombre_completo}
                   </h1>
                   <p className="text-emerald-600 font-medium mb-3">
-                    {professional.specialty}
+                    {professional.especialidad}
                   </p>
                   <p className="text-gray-600 mb-4">
-                    {professional.description}
+                    {professional.descripcion || 'Profesional dedicado a brindar el mejor servicio'}
                   </p>
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="flex items-center space-x-1">
+                      <StarRating rating={professional.calificacion_promedio || 0} />
+                      <span className="text-sm text-gray-600 ml-2">
+                        ({professional.numero_resenas || 0} reseñas)
+                      </span>
+                    </div>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-600">{professional.experiencia_anos} años de experiencia</span>
+                  </div>
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="flex items-center text-gray-600">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {professional.ciudad}
+                    </div>
+                    {professional.telefono && (
+                      <>
+                        <span className="text-gray-400">•</span>
+                        <div className="flex items-center text-gray-600">
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          {professional.telefono}
+                        </div>
+                      </>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-2">
                         {/* Botón favorito: toggle y persistencia en localStorage */}
@@ -232,25 +297,48 @@ const ProfessionalProfile = () => {
 
             {/* Servicios */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Servicios</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Servicios y Precios</h2>
               <div className="grid md:grid-cols-2 gap-4">
-                {services.map((service) => (
-                  <div 
-                    key={service.id}
-                    className="border-2 border-gray-200 rounded-lg p-4 hover:border-green-500 transition-colors cursor-pointer"
-                  >
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      {service.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {service.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-gray-900">{service.price}</span>
-                      <span className="text-sm text-gray-500">{service.duration}</span>
+                <div className="border-2 border-gray-200 rounded-lg p-4 hover:border-green-500 transition-colors">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Consulta Profesional
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Sesión completa para evaluar tus necesidades y definir un plan de acción.
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-emerald-600 text-lg">
+                      ${professional.precio_consulta?.toLocaleString()} COP
+                    </span>
+                    <span className="text-sm text-gray-500">60 min</span>
+                  </div>
+                </div>
+                
+                <div className="border-2 border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    Información Adicional
+                  </h3>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Consulta presencial
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Pago fácil y seguro
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Confirmación inmediata
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
 
@@ -364,12 +452,41 @@ const ProfessionalProfile = () => {
                 </div>
               </div>
 
+              {/* Precio de la consulta */}
+              <div className="mb-6 bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700 font-medium">Precio de consulta:</span>
+                  <span className="text-2xl font-bold text-emerald-600">
+                    ${professional.precio_consulta?.toLocaleString()} COP
+                  </span>
+                </div>
+              </div>
+
               {/* Botón agendar */}
-              <Link to="/confirmacion_cita" 
-                className="block w-full text-center bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700 transition-colors"
+              <button
+                onClick={() => {
+                  if (selectedDate && selectedTime !== 'sin seleccionar') {
+                    // Pasar la fecha y hora seleccionadas como parámetros
+                    const fechaCompleta = new Date(currentYear, currentMonth, selectedDate);
+                    navigate(`/Confirmacion_cita?id=${profesionalId}&fecha=${fechaCompleta.toISOString()}&hora=${selectedTime}`);
+                  } else {
+                    alert('Por favor selecciona una fecha y hora para la cita');
+                  }
+                }}
+                className={`w-full text-center font-semibold py-3 rounded-lg transition-colors ${
+                  selectedDate && selectedTime !== 'sin seleccionar'
+                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 Agendar Cita
-              </Link>
+              </button>
+              
+              <p className="text-xs text-center text-gray-500 mt-3">
+                {!selectedDate || selectedTime === 'sin seleccionar' 
+                  ? 'Selecciona fecha y hora para continuar'
+                  : 'Revisa los detalles y confirma tu cita'}
+              </p>
             </div>
           </div>
         </div>

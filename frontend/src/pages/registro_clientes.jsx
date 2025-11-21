@@ -1,37 +1,79 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { register, login } from '../api';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    nombre: '',
+    apellido: '',
     email: '',
+    telefono: '',
     password: '',
     confirmPassword: '',
-    userType: 'cliente'
+    tipo_usuario: 'cliente'
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Limpiar error al escribir
+    if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validar que las contraseñas coincidan
     if (formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
-    // Aquí puedes agregar la lógica de registro
-    console.log('Registro:', formData);
-    alert('¡Cuenta creada exitosamente!');
+    // Validar longitud de contraseña
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Preparar datos para el registro
+      const registerData = {
+        email: formData.email,
+        password: formData.password,
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono,
+        tipo_usuario: formData.tipo_usuario
+      };
+
+      // Registrar usuario
+      await register(registerData);
+      
+      // Iniciar sesión automáticamente
+      await login(formData.email, formData.password);
+      
+      // Redirigir según el tipo de usuario
+      if (formData.tipo_usuario === 'cliente') {
+        navigate('/inicio_clientes');
+      } else if (formData.tipo_usuario === 'profesional') {
+        navigate('/inicio_profesional');
+      }
+    } catch (err) {
+      setError(err.message || 'Error al crear la cuenta');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,24 +94,69 @@ const Register = () => {
 
         {/* Formulario */}
         <div className="bg-white rounded-xl shadow-lg p-8">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Nombre */}
             <div>
               <label 
-                htmlFor="name" 
+                htmlFor="nombre" 
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Nombre Completo
+                Nombre
               </label>
               <input
                 type="text"
-                id="name"
-                name="name"
-                value={formData.name}
+                id="nombre"
+                name="nombre"
+                value={formData.nombre}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                placeholder="Juan Pérez"
+                placeholder="Juan"
+              />
+            </div>
+
+            {/* Apellido */}
+            <div>
+              <label 
+                htmlFor="apellido" 
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Apellido
+              </label>
+              <input
+                type="text"
+                id="apellido"
+                name="apellido"
+                value={formData.apellido}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                placeholder="Pérez"
+              />
+            </div>
+
+            {/* Teléfono */}
+            <div>
+              <label 
+                htmlFor="telefono" 
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Teléfono (Opcional)
+              </label>
+              <input
+                type="tel"
+                id="telefono"
+                name="telefono"
+                value={formData.telefono}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                placeholder="3001234567"
               />
             </div>
 
@@ -109,9 +196,9 @@ const Register = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  minLength="8"
+                  minLength="6"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="Mínimo 6 caracteres"
                 />
                 <button
                   type="button"
@@ -191,12 +278,13 @@ const Register = () => {
             </div>
 
             {/* Botón de envío */}
-            <Link 
-              to="/inicio_clientes" 
-              className="w-full inline-flex justify-center px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors text-center"
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Crear Cuenta
-            </Link>
+              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            </button>
           </form>
 
           {/* Link a login */}

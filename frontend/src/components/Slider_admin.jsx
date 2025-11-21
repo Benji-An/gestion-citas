@@ -9,7 +9,7 @@ const AdminSidebar = () => {
     if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUser');
-      navigate('/admin/login');
+      navigate('/login_clientes');
     }
   };
 

@@ -16,6 +16,9 @@ import BookAppointment from './pages/Confirmacion_cita';
 import Payment from './pages/Pasarela_pago';
 import PaymentHistory from './pages/Historial_pagos';
 import ClientProfile from './pages/Perfil_clientes';
+import NotificacionesCliente from './pages/Notificaciones_cliente';
+import PagoCompletado from './pages/Pago_completado';
+import PagoCancelado from './pages/Pago_cancelado';
 // Rutas del profesional
 import ProfessionalAppointments from './pages/inicio_profesional';
 import ProfessionalDashboard from './pages/Panelcitas_profesional';
@@ -27,7 +30,7 @@ import ProfessionalProfile from './pages/perfil_profesional';
 import InicioAdmin from './pages/inicio_admin';
 import DashboardAdmin from './pages/Dashboard_admin';
 import AdminProfessionals from './pages/Admin_profesionales';
-import AdminPatients from './pages/Admin_cliente';
+import AdminPatients from './pages/Admin_pacientes';
 import AdminAppointments from './pages/Admin_citas';
 import { Routes, Route } from 'react-router-dom';
 
@@ -62,9 +65,12 @@ function App() {
       <Route path="/cliente/favoritos" element={<ClientFavorites />} />
       <Route path="/cliente/pagos" element={<PaymentHistory />} />
       <Route path="/cliente/perfil" element={<ClientProfile />} />
-  <Route path="/Buscar_profesional" element={<ProfessionalSearch />} />
+      <Route path="/cliente/notificaciones" element={<NotificacionesCliente />} />
+      <Route path="/Buscar_profesional" element={<ProfessionalSearch />} />
       <Route path="/Confirmacion_cita" element={<BookAppointment />} />
       <Route path="/Pasarela_pago" element={<Payment />} />
+      <Route path="/pago-completado" element={<PagoCompletado />} />
+      <Route path="/pago-cancelado" element={<PagoCancelado />} />
       {/* Rutas del profesional */}
       <Route path="/inicio_profesional" element={<ProfessionalAppointments />} />
       <Route path="/Panelcitas_profesional" element={<ProfessionalDashboard />} />

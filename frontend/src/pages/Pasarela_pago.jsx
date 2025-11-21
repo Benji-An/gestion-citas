@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ClientNavbar from '../components/Navbar_cliente';
+import { procesarPago } from '../api';
 
 const Payment = () => {
   const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const location = useLocation();
+  const { cita, servicio, profesional, tipo, fechaTexto, hora } = location.state || {};
+
+  const [paymentMethod, setPaymentMethod] = useState('paypal');
+  const [processing, setProcessing] = useState(false);
   const [cardData, setCardData] = useState({
     cardName: '',
     cardNumber: '',
@@ -12,14 +17,27 @@ const Payment = () => {
     cvv: ''
   });
 
-  // Datos de la cita (normalmente vendrían de props o context)
+  useEffect(() => {
+    // Verificar que tenemos los datos necesarios
+    if (!cita || !servicio) {
+      alert('No se encontraron datos de la cita');
+      navigate('/cliente/profesionales');
+    }
+  }, [cita, servicio, navigate]);
+
+  if (!cita || !servicio) {
+    return null;
+  }
+
   const appointmentData = {
-    service: "Consulta con Dr. Evans",
-    date: "25 Octubre, 2023",
-    time: "10:30 AM",
-    subtotal: 80.00,
-    tax: 8.00,
-    total: 88.00
+    service: `${servicio.name} con ${profesional?.nombre || ''} ${profesional?.apellido || ''}`,
+    date: fechaTexto,
+    time: hora,
+    duracion: `${servicio.duration} minutos`,
+    tipo: tipo === 'videollamada' ? 'Videollamada' : 'Presencial',
+    subtotal: cita.precio,
+    tax: Math.round(cita.precio * 0.19), // IVA del 19%
+    total: Math.round(cita.precio * 1.19)
   };
 
   const handleInputChange = (e) => {
@@ -52,8 +70,10 @@ const Payment = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (processing) return;
     
     // Validaciones básicas
     if (paymentMethod === 'card') {
@@ -63,9 +83,46 @@ const Payment = () => {
       }
     }
 
-    // Aquí iría la lógica de procesamiento de pago
-    alert('¡Pago procesado exitosamente!');
-    navigate('/cliente/citas');
+    setProcessing(true);
+
+    try {
+      if (paymentMethod === 'paypal') {
+        // Redirigir a PayPal
+        const response = await fetch('http://localhost:8000/api/pagos/paypal/crear-pago', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ cita_id: cita.id })
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al crear el pago con PayPal');
+        }
+
+        const data = await response.json();
+        
+        // Redirigir a PayPal
+        window.location.href = data.approval_url;
+      } else {
+        // Pago con tarjeta (simulado)
+        const pagoData = {
+          cita_id: cita.id,
+          monto: appointmentData.total,
+          metodo_pago: 'tarjeta'
+        };
+
+        await procesarPago(pagoData);
+        alert('¡Pago procesado exitosamente!');
+        navigate('/cliente/citas');
+      }
+    } catch (error) {
+      console.error('Error al procesar pago:', error);
+      alert('Error al procesar el pago: ' + error.message);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -218,9 +275,10 @@ const Payment = () => {
                   {/* Botón de pago */}
                   <button
                     type="submit"
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition-colors mt-6"
+                    disabled={processing}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition-colors mt-6 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
-                    Pagar ahora
+                    {processing ? 'Procesando...' : 'Pagar ahora'}
                   </button>
 
                   {/* Términos */}
@@ -243,13 +301,22 @@ const Payment = () => {
                 <div className="text-center py-8">
                   <button
                     onClick={handleSubmit}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
+                    disabled={processing}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
-                    Continuar con PayPal
+                    {processing ? 'Redirigiendo...' : 'Continuar con PayPal'}
                   </button>
                   <p className="text-xs text-gray-600 mt-4">
                     Serás redirigido a PayPal para completar tu pago de forma segura
                   </p>
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-gray-700">
+                      <strong>Nota:</strong> El monto será convertido automáticamente a USD
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Aproximadamente ${Math.round(appointmentData.total / 4000)} USD
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -270,6 +337,13 @@ const Payment = () => {
                   </p>
                 </div>
 
+                <div>
+                  <p className="text-gray-600 mb-1">Tipo:</p>
+                  <p className="font-semibold text-gray-900">
+                    {appointmentData.tipo}
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-gray-600 mb-1">Fecha:</p>
@@ -285,17 +359,24 @@ const Payment = () => {
                   </div>
                 </div>
 
+                <div>
+                  <p className="text-gray-600 mb-1">Duración:</p>
+                  <p className="font-semibold text-gray-900">
+                    {appointmentData.duracion}
+                  </p>
+                </div>
+
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal:</span>
                     <span className="font-medium text-gray-900">
-                      ${appointmentData.subtotal.toFixed(2)}
+                      ${appointmentData.subtotal.toLocaleString('es-CO')}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Impuestos (10%):</span>
+                    <span className="text-gray-600">IVA (19%):</span>
                     <span className="font-medium text-gray-900">
-                      ${appointmentData.tax.toFixed(2)}
+                      ${appointmentData.tax.toLocaleString('es-CO')}
                     </span>
                   </div>
                 </div>
@@ -306,9 +387,10 @@ const Payment = () => {
                       Total a pagar:
                     </span>
                     <span className="text-2xl font-bold text-green-500">
-                      ${appointmentData.total.toFixed(2)}
+                      ${appointmentData.total.toLocaleString('es-CO')}
                     </span>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1 text-right">COP</p>
                 </div>
               </div>
 

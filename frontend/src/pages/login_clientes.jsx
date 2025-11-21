@@ -1,26 +1,58 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { login, getCurrentUser } from '../api';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Limpiar error al escribir
+    if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí puedes agregar la lógica de autenticación
-    console.log('Login:', formData);
-    alert('Iniciando sesión...');
+    setLoading(true);
+    setError('');
+
+    try {
+      // Realizar login
+      await login(formData.email, formData.password);
+      
+      // Obtener información del usuario
+      const user = await getCurrentUser();
+      
+      // Redirigir según el tipo de usuario
+      switch (user.tipo_usuario) {
+        case 'cliente':
+          navigate('/inicio_clientes');
+          break;
+        case 'profesional':
+          navigate('/inicio_profesional');
+          break;
+        case 'admin':
+          navigate('/inicio_admin');
+          break;
+        default:
+          navigate('/');
+      }
+    } catch (err) {
+      setError(err.message || 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,6 +71,12 @@ const Login = () => {
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-lg p-8">
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label 
@@ -111,12 +149,13 @@ const Login = () => {
                 ¿Olvidaste tu contraseña?
               </a>
             </div>
-            <Link 
-              to="/inicio_profesional" 
-              className="w-full inline-flex justify-center px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors text-center"
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-4 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Iniciar Sesión
-            </Link>
+              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            </button>
           </form>
           <p className="text-center text-sm text-gray-600 mt-6">
             ¿No tienes una cuenta?{' '}

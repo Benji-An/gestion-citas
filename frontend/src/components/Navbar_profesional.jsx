@@ -2,6 +2,21 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const ProfessionalNavbar = () => {
+  const [fotoPerfil, setFotoPerfil] = React.useState('');
+
+  React.useEffect(() => {
+    const foto = localStorage.getItem('foto_perfil');
+    if (foto) {
+      setFotoPerfil(foto);
+    }
+  }, []);
+
+  const getInitials = () => {
+    const nombre = localStorage.getItem('user_name') || '';
+    const apellido = localStorage.getItem('user_lastname') || '';
+    return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
+  };
+
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,7 +36,13 @@ const ProfessionalNavbar = () => {
 
             <div className="relative group">
               <button className="flex items-center space-x-2 focus:outline-none">
-                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profesional" className="w-8 h-8 rounded-full object-cover border-2 border-gray-200" />
+                {fotoPerfil ? (
+                  <img src={fotoPerfil} alt="Profesional" className="w-8 h-8 rounded-full object-cover border-2 border-gray-200" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center border-2 border-gray-200">
+                    <span className="text-white text-xs font-semibold">{getInitials()}</span>
+                  </div>
+                )}
                 <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none">
                   <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>

@@ -1,51 +1,82 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ClientNavbar from '../components/Navbar_cliente';
+import { getProfesional, agendarCita } from '../api';
 
 const BookAppointment = () => {
-  // Obtener fecha actual
-  const today = new Date();
+  const [searchParams] = useSearchParams();
+  const profesionalId = searchParams.get('id');
+  const fechaParam = searchParams.get('fecha');
+  const horaParam = searchParams.get('hora');
+  const navigate = useNavigate();
+  
+  // Obtener fecha de los parámetros o usar fecha actual
+  const fechaSeleccionada = fechaParam ? new Date(fechaParam) : new Date();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedService, setSelectedService] = useState(null);
   const [appointmentType, setAppointmentType] = useState('videollamada');
-  const [selectedDate, setSelectedDate] = useState(null); // Solo guarda el día (número)
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth()); // Mes actual
-  const [currentYear, setCurrentYear] = useState(today.getFullYear()); // Año actual
+  const [selectedDate] = useState(fechaSeleccionada.getDate());
+  const [selectedTime] = useState(horaParam || null);
+  const [currentMonth] = useState(fechaSeleccionada.getMonth());
+  const [currentYear] = useState(fechaSeleccionada.getFullYear());
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: ''
+    motivo: '',
+    notas: ''
   });
 
-  const navigate = useNavigate();
-
-  const professional = {
-    name: "Dra. Isabel Martínez",
-    specialty: "Psicóloga Clínica"
-  };
+  const [professional, setProfessional] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const services = [
     {
       id: 1,
       name: "Consulta General",
-      duration: "30 minutos",
-      price: 50
+      duration: 30,
+      price: 50000
     },
     {
       id: 2,
       name: "Consulta de Seguimiento",
-      duration: "20 minutos",
-      price: 35
+      duration: 20,
+      price: 35000
     },
     {
       id: 3,
-      name: "Examen Completo",
-      duration: "1 hora",
-      price: 120
+      name: "Consulta Completa",
+      duration: 60,
+      price: 80000
     }
   ];
+
+  useEffect(() => {
+    const cargarProfesional = async () => {
+      if (!profesionalId) {
+        setError('No se especificó un profesional');
+        setLoading(false);
+        return;
+      }
+
+      if (!fechaParam || !horaParam) {
+        setError('Debes seleccionar fecha y hora desde la página del profesional');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getProfesional(profesionalId);
+        setProfessional(data);
+      } catch (err) {
+        console.error('Error al cargar profesional:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarProfesional();
+  }, [profesionalId, fechaParam, horaParam]);
 
   const availableTimes = [
     { time: "09:00 AM", available: true },
@@ -125,19 +156,69 @@ const BookAppointment = () => {
     });
   };
 
-  const handleConfirmBooking = (e) => {
+  const handleConfirmBooking = async (e) => {
     e.preventDefault();
-    // Aquí iría la lógica para confirmar la reserva
-    const bookingData = {
-      service: selectedService,
-      type: appointmentType,
-      date: `${selectedDate} de ${monthNames[currentMonth]}, ${currentYear}`,
-      time: selectedTime,
-      ...formData
-    };
-    console.log('Reserva confirmada (navegando a pago):', bookingData);
+    
+    if (!selectedDate || !selectedTime || !selectedService) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
 
-    navigate('/Pasarela_pago', { state: { bookingData } });
+    try {
+      console.log('=== INICIO CONFIRMACIÓN ===');
+      console.log('selectedTime:', selectedTime);
+      console.log('selectedService:', selectedService);
+      console.log('fechaSeleccionada original:', fechaSeleccionada);
+      
+      // Crear fecha y hora en formato ISO usando la fecha que viene de los parámetros
+      const [hora, minuto] = selectedTime.replace(' AM', '').replace(' PM', '').split(':');
+      let hora24 = parseInt(hora);
+      if (selectedTime.includes('PM') && hora24 !== 12) hora24 += 12;
+      if (selectedTime.includes('AM') && hora24 === 12) hora24 = 0;
+      
+      console.log('Hora parseada - hora24:', hora24, 'minuto:', minuto);
+      
+      // Usar la fecha seleccionada que ya viene parseada
+      const fechaHora = new Date(fechaSeleccionada);
+      fechaHora.setHours(hora24, parseInt(minuto), 0, 0);
+      
+      console.log('fechaHora con setHours:', fechaHora);
+      console.log('fechaHora.toISOString():', fechaHora.toISOString());
+
+      // Preparar datos para la API
+      const citaData = {
+        profesional_id: parseInt(profesionalId),
+        fecha_hora: fechaHora.toISOString(),
+        duracion_minutos: selectedService.duration,
+        motivo: formData.motivo || selectedService.name,
+        notas: formData.notas || '',
+        precio: selectedService.price
+      };
+
+      console.log('citaData completo:', JSON.stringify(citaData, null, 2));
+
+      // Crear la cita
+      console.log('Llamando a agendarCita...');
+      const citaCreada = await agendarCita(citaData);
+      
+      console.log('✅ Cita creada exitosamente:', citaCreada);
+      
+      // Navegar a pasarela de pago con los datos
+      navigate('/Pasarela_pago', { 
+        state: { 
+          cita: citaCreada,
+          servicio: selectedService,
+          profesional: professional,
+          tipo: appointmentType,
+          fechaTexto: `${selectedDate} de ${monthNames[currentMonth]}, ${currentYear}`,
+          hora: selectedTime
+        } 
+      });
+    } catch (err) {
+      console.error('❌ Error al agendar cita:', err);
+      console.error('Detalles del error:', err.message);
+      alert('Error al agendar la cita: ' + err.message);
+    }
   };
 
   const getProgressPercentage = () => {
@@ -150,6 +231,28 @@ const BookAppointment = () => {
     return dayNames[date.getDay()];
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ClientNavbar />
+        <div className="max-w-6xl mx-auto px-4 py-8 text-center">
+          <p>Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !professional) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ClientNavbar />
+        <div className="max-w-6xl mx-auto px-4 py-8 text-center">
+          <p className="text-red-600">{error || 'Profesional no encontrado'}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <ClientNavbar />
@@ -160,7 +263,7 @@ const BookAppointment = () => {
           Reserva tu Cita
         </h1>
         <p className="text-gray-600 mb-8">
-          con {professional.name} - {professional.specialty}
+          con {professional.nombre} {professional.apellido} - {professional.especialidad}
         </p>
 
         {/* Barra de progreso */}
@@ -270,99 +373,42 @@ const BookAppointment = () => {
               </div>
             )}
 
-            {/* Paso 2: Fecha y Hora */}
+            {/* Paso 2: Fecha y Hora Seleccionadas */}
             {currentStep >= 2 && selectedService && (
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Elige una Fecha y Hora
+                  Fecha y Hora de tu Cita
                 </h2>
 
-                {/* Calendario */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <button 
-                      type="button"
-                      onClick={previousMonth}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <h3 className="font-semibold text-gray-900">
-                      {monthNames[currentMonth]} {currentYear}
-                    </h3>
-                    <button 
-                      type="button"
-                      onClick={nextMonth}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+                  <div className="flex items-center justify-center mb-4">
+                    <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                   </div>
-
-                  {/* Días de la semana */}
-                  <div className="grid grid-cols-7 gap-2 mb-2">
-                    {daysOfWeek.map((day) => (
-                      <div key={day} className="text-center text-sm font-medium text-gray-600">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Días del mes */}
-                  <div className="grid grid-cols-7 gap-2">
-                    {generateCalendarDays().map((day, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={(e) => handleDateClick(e, day)}
-                        disabled={!day}
-                        className={`
-                          aspect-square flex items-center justify-center text-sm rounded-lg
-                          ${!day ? 'invisible' : ''}
-                          ${day && selectedDate === day ? 'bg-green-500 text-white font-semibold' : ''}
-                          ${day && selectedDate !== day ? 'hover:bg-gray-100 text-gray-700' : ''}
-                          transition-colors disabled:cursor-default
-                        `}
-                      >
-                        {day}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Horarios Disponibles */}
-                {selectedDate && (
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">
-                      Horarios Disponibles
-                    </h3>
-                    <div className="grid grid-cols-3 gap-3">
-                      {availableTimes.map((slot) => (
-                        <button
-                          key={slot.time}
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSelectedTime(slot.time);
-                          }}
-                          className={`
-                            py-3 px-4 text-sm font-medium rounded-lg border-2 transition-colors
-                            ${selectedTime === slot.time
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'border-gray-200 text-gray-700 hover:border-green-500'
-                            }
-                          `}
-                        >
-                          {slot.time}
-                        </button>
-                      ))}
+                  
+                  <div className="text-center space-y-3">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Fecha seleccionada:</p>
+                      <p className="text-xl font-bold text-gray-900">
+                        {getDayName(selectedDate)}, {selectedDate} de {monthNames[currentMonth]}, {currentYear}
+                      </p>
+                    </div>
+                    
+                    <div className="pt-3 border-t border-green-200">
+                      <p className="text-sm text-gray-600 mb-1">Hora seleccionada:</p>
+                      <p className="text-xl font-bold text-gray-900">
+                        {selectedTime}
+                      </p>
                     </div>
                   </div>
-                )}
+
+                  <div className="mt-4 text-center">
+                    <p className="text-xs text-gray-500">
+                      ✓ Fecha y hora confirmadas
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -370,46 +416,33 @@ const BookAppointment = () => {
             {currentStep === 3 && (
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Confirma tus Datos
+                  Detalles de la Cita
                 </h2>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nombre Completo
+                      Motivo de la Consulta
                     </label>
                     <input
                       type="text"
-                      name="fullName"
-                      value={formData.fullName}
+                      name="motivo"
+                      value={formData.motivo}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
-                      placeholder="Juan Pérez"
+                      placeholder="Ej: Consulta general"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Correo Electrónico
+                      Notas Adicionales (Opcional)
                     </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
+                    <textarea
+                      name="notas"
+                      value={formData.notas}
                       onChange={handleInputChange}
+                      rows="4"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
-                      placeholder="tu@email.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Número de Teléfono
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
-                      placeholder="+57 300 123 4567"
+                      placeholder="Describe síntomas o información relevante..."
                     />
                   </div>
                 </div>
@@ -435,14 +468,9 @@ const BookAppointment = () => {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentStep === 2 && (!selectedDate || !selectedTime)) {
-                      alert('Por favor selecciona una fecha y hora');
-                      return;
-                    }
                     setCurrentStep(currentStep + 1);
                   }}
-                  disabled={currentStep === 2 && (!selectedDate || !selectedTime)}
-                  className="ml-auto px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="ml-auto px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
                 >
                   Siguiente
                 </button>
@@ -495,9 +523,10 @@ const BookAppointment = () => {
                   <div className="flex justify-between items-center">
                     <p className="text-gray-900 font-bold">Total:</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      ${selectedService ? selectedService.price : 0}
+                      ${selectedService ? selectedService.price.toLocaleString('es-CO') : 0}
                     </p>
                   </div>
+                  <p className="text-xs text-gray-500 mt-2 text-right">COP (Pesos Colombianos)</p>
                 </div>
               </div>
 

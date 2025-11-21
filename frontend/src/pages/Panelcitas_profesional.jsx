@@ -1,20 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProfessionalNavbar from '../components/Navbar_profesional';
 
-
-const sampleAppointments = [
-  { id: 1, name: 'Luisa Fernández', date: '2024-10-05', time: '10:30', service: 'Limpieza Dental', status: 'confirmed' },
-  { id: 2, name: 'Carlos Méndez', date: new Date().toISOString().slice(0,10), time: '12:00', service: 'Revisión general', status: 'pending' },
-  { id: 3, name: 'Ana Torres', date: '2024-10-04', time: '16:00', service: 'Ortodoncia', status: 'cancelled' },
-  { id: 4, name: 'Jorge Ríos', date: '2024-10-11', time: '11:00', service: 'Blanqueamiento', status: 'confirmed' },
-  { id: 5, name: 'María Gómez', date: new Date().toISOString().slice(0,10), time: '15:00', service: 'Consulta', status: 'confirmed' },
-];
-
 const statusBadge = (status) => {
-  if (status === 'confirmed') return 'bg-green-100 text-green-800';
-  if (status === 'pending') return 'bg-yellow-100 text-yellow-800';
-  if (status === 'cancelled') return 'bg-red-100 text-red-800';
-  return 'bg-gray-100 text-gray-700';
+  const estados = {
+    'PENDIENTE': 'bg-yellow-100 text-yellow-800',
+    'CONFIRMADA': 'bg-blue-100 text-blue-800',
+    'COMPLETADA': 'bg-green-100 text-green-800',
+    'CANCELADA': 'bg-red-100 text-red-800'
+  };
+  return estados[status] || 'bg-gray-100 text-gray-700';
 };
 
 const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -29,12 +24,75 @@ function getFirstWeekday(month, year) {
 }
 
 const ProfessionalAppointments = () => {
+  const navigate = useNavigate();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDate, setSelectedDate] = useState(today.toISOString().slice(0,10));
-  const [appointments, setAppointments] = useState(sampleAppointments);
+  const [appointments, setAppointments] = useState([]);
   const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [filtroEstado, setFiltroEstado] = useState('TODOS');
+
+  useEffect(() => {
+    cargarCitas();
+  }, []);
+
+  const cargarCitas = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login_clientes');
+        return;
+      }
+
+      const API_URL = 'http://localhost:8000';
+      const response = await fetch(`${API_URL}/api/profesionales/dashboard/citas`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar citas');
+      }
+
+      const data = await response.json();
+      setAppointments(data.citas);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error cargando citas:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login_clientes');
+      }
+      setLoading(false);
+    }
+  };
+
+  const actualizarEstado = async (citaId, nuevoEstado) => {
+    try {
+      const token = localStorage.getItem('token');
+      const API_URL = 'http://localhost:8000';
+      
+      const response = await fetch(
+        `${API_URL}/api/profesionales/dashboard/citas/${citaId}/estado?nuevo_estado=${nuevoEstado}`,
+        {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar estado');
+      }
+
+      // Recargar citas
+      await cargarCitas();
+      alert(`Cita actualizada a ${nuevoEstado}`);
+    } catch (error) {
+      console.error('Error actualizando estado:', error);
+      alert('Error al actualizar el estado de la cita');
+    }
+  };
 
   const daysGrid = useMemo(() => {
     const daysInMonth = getDaysInMonth(currentMonth, currentYear);
@@ -43,7 +101,7 @@ const ProfessionalAppointments = () => {
     for (let i = 0; i < firstWeekday; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
       const iso = new Date(currentYear, currentMonth, d).toISOString().slice(0,10);
-      const hasEvents = appointments.some(a => a.date === iso);
+      const hasEvents = appointments.some(a => a.fecha_hora.startsWith(iso));
       cells.push({ day: d, iso, hasEvents });
     }
     return cells;
@@ -58,18 +116,29 @@ const ProfessionalAppointments = () => {
     else setCurrentMonth(m => m - 1);
   };
 
-  const appointmentsForSelected = appointments.filter(a => a.date === selectedDate);
+  const appointmentsForSelected = appointments.filter(a => a.fecha_hora.startsWith(selectedDate));
+  
   const upcoming = appointments
-    .filter(a => new Date(a.date + 'T' + a.time) >= new Date())
-    .sort((x,y) => new Date(x.date + 'T' + x.time) - new Date(y.date + 'T' + y.time))
-    .filter(a => a.name.toLowerCase().includes(query.toLowerCase()));
+    .filter(a => new Date(a.fecha_hora) >= new Date())
+    .filter(a => filtroEstado === 'TODOS' || a.estado === filtroEstado)
+    .filter(a => !query || a.cliente.nombre_completo.toLowerCase().includes(query.toLowerCase()))
+    .sort((x,y) => new Date(x.fecha_hora) - new Date(y.fecha_hora));
 
-  const handleEdit = (apt) => {
-    alert(`Editar cita de ${apt.name} (${apt.id}) — implementar modal o navegación`);
+  const formatearFecha = (fechaISO) => {
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleDateString('es-ES', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
   };
-  const handleDelete = (apt) => {
-    if (!confirm(`Eliminar cita de ${apt.name} el ${apt.date} ${apt.time}?`)) return;
-    setAppointments(prev => prev.filter(p => p.id !== apt.id));
+
+  const formatearHora = (fechaISO) => {
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
 
   return (
@@ -134,7 +203,7 @@ const ProfessionalAppointments = () => {
 
               {/* Lista de citas del día */}
               <div className="mt-6">
-                <h4 className="text-sm text-gray-600 mb-2">Citas el {new Date(selectedDate).toLocaleDateString()}</h4>
+                <h4 className="text-sm text-gray-600 mb-2">Citas el {new Date(selectedDate).toLocaleDateString('es-ES')}</h4>
                 <div className="space-y-3">
                   {appointmentsForSelected.length === 0 && (
                     <div className="text-sm text-gray-500 p-4 rounded bg-gray-50">No hay citas este día.</div>
@@ -142,13 +211,15 @@ const ProfessionalAppointments = () => {
                   {appointmentsForSelected.map(a => (
                     <div key={a.id} className="flex items-center justify-between p-3 rounded border border-gray-100">
                       <div>
-                        <div className="font-medium text-gray-900">{a.name}</div>
-                        <div className="text-xs text-gray-500">{a.time} · {a.service}</div>
+                        <div className="font-medium text-gray-900">{a.cliente.nombre_completo}</div>
+                        <div className="text-xs text-gray-500">
+                          {formatearHora(a.fecha_hora)} · {a.motivo || 'Consulta general'} · {a.duracion_minutos} min
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs ${statusBadge(a.status)}`}>{
-                          a.status === 'confirmed' ? 'Confirmada' : a.status === 'pending' ? 'Pendiente' : 'Cancelada'
-                        }</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${statusBadge(a.estado)}`}>
+                          {a.estado}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -165,32 +236,93 @@ const ProfessionalAppointments = () => {
                 <div className="text-sm text-gray-500">{upcoming.length}</div>
               </div>
 
-              <div className="space-y-4">
-                {upcoming.map(apt => (
-                  <div key={apt.id} className="flex items-start justify-between gap-3 p-3 rounded-lg border border-gray-100">
-                    <div>
-                      <div className="font-medium text-gray-900">{apt.name}</div>
-                      <div className="text-xs text-gray-500">{apt.date === new Date().toISOString().slice(0,10) ? 'Hoy' : apt.date}, {apt.time} · {apt.service}</div>
+              {/* Filtros */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm mb-3"
+                />
+                <div className="flex gap-2 flex-wrap">
+                  {['TODOS', 'PENDIENTE', 'CONFIRMADA', 'COMPLETADA', 'CANCELADA'].map(estado => (
+                    <button
+                      key={estado}
+                      onClick={() => setFiltroEstado(estado)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        filtroEstado === estado 
+                          ? 'bg-emerald-600 text-white' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {estado}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {loading && (
+                  <div className="text-sm text-gray-500 p-4 rounded bg-gray-50">Cargando...</div>
+                )}
+
+                {!loading && upcoming.map(apt => (
+                  <div key={apt.id} className="flex flex-col gap-2 p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{apt.cliente.nombre_completo}</div>
+                        <div className="text-xs text-gray-500">
+                          {formatearFecha(apt.fecha_hora)} · {formatearHora(apt.fecha_hora)}
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {apt.motivo || 'Consulta general'} · {apt.duracion_minutos} min
+                        </div>
+                      </div>
+
+                      <span className={`px-2 py-1 rounded-full text-xs ${statusBadge(apt.estado)}`}>
+                        {apt.estado}
+                      </span>
                     </div>
 
-                    <div className="flex flex-col items-end gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs ${statusBadge(apt.status)}`}>
-                        {apt.status === 'confirmed' ? 'Confirmada' : apt.status === 'pending' ? 'Pendiente' : 'Cancelada'}
-                      </span>
-
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => handleEdit(apt)} className="p-2 text-gray-500 hover:bg-gray-50 rounded">
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M15.232 5.232l3.536 3.536M4 21l7.607-1.267L21 11.34 12.607 4 4 21z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    {/* Acciones rápidas */}
+                    {apt.estado === 'PENDIENTE' && (
+                      <div className="flex gap-2 mt-2 pt-2 border-t">
+                        <button
+                          onClick={() => actualizarEstado(apt.id, 'CONFIRMADA')}
+                          className="flex-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Confirmar
                         </button>
-                        <button type="button" onClick={() => handleDelete(apt)} className="p-2 text-gray-500 hover:bg-gray-50 rounded">
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6M10 6V4a2 2 0 012-2h0a2 2 0 012 2v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        <button
+                          onClick={() => actualizarEstado(apt.id, 'CANCELADA')}
+                          className="flex-1 px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                        >
+                          Cancelar
                         </button>
                       </div>
-                    </div>
+                    )}
+
+                    {apt.estado === 'CONFIRMADA' && (
+                      <div className="flex gap-2 mt-2 pt-2 border-t">
+                        <button
+                          onClick={() => actualizarEstado(apt.id, 'COMPLETADA')}
+                          className="flex-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                        >
+                          Completar
+                        </button>
+                        <button
+                          onClick={() => actualizarEstado(apt.id, 'CANCELADA')}
+                          className="flex-1 px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
 
-                {upcoming.length === 0 && (
+                {!loading && upcoming.length === 0 && (
                   <div className="text-sm text-gray-500 p-4 rounded bg-gray-50">No hay próximas citas</div>
                 )}
               </div>

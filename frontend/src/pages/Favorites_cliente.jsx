@@ -1,56 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import ClientNavbar from '../components/Navbar_cliente';
+import { getMisFavoritos, eliminarFavorito, getToken } from '../api';
 
 const ClientFavorites = () => {
-  const [favorites, setFavorites] = useState([
-    {
-      id: 1,
-      name: "Dra. Ana Torres",
-      specialty: "Psicología",
-      location: "Madrid, España",
-      description: "Especialista en terapia cognitivo-conductual con más de 10 años de experiencia.",
-      rating: 4.9,
-      reviews: 124,
-      image: "https://randomuser.me/api/portraits/women/44.jpg",
-      available: true
-    },
-    {
-      id: 2,
-      name: "Carlos Vega",
-      specialty: "Nutrición",
-      location: "Barcelona, España",
-      description: "Ayudo a crear hábitos alimenticios saludables y sustentables.",
-      rating: 5.0,
-      reviews: 88,
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-      available: true
-    },
-    {
-      id: 3,
-      name: "María González",
-      specialty: "Psicología",
-      location: "Madrid, España",
-      description: "Terapeuta especializada en ansiedad y gestión del estrés.",
-      rating: 4.8,
-      reviews: 95,
-      image: "https://randomuser.me/api/portraits/women/68.jpg",
-      available: false
-    },
-    {
-      id: 4,
-      name: "Javier Romero",
-      specialty: "Fisioterapia",
-      location: "Valencia, España",
-      description: "Recuperación de lesiones deportivas y rehabilitación postoperatoria.",
-      rating: 4.2,
-      reviews: 76,
-      image: "https://randomuser.me/api/portraits/men/52.jpg",
-      available: true
-    }
-  ]);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const removeFavorite = (id) => {
-    setFavorites(favorites.filter(fav => fav.id !== id));
+  useEffect(() => {
+    cargarFavoritos();
+  }, []);
+
+  const cargarFavoritos = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await getMisFavoritos();
+      console.log('Favoritos recibidos:', data); // Debug
+      setFavorites(data || []);
+    } catch (err) {
+      console.error('Error al cargar favoritos:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeFavorite = async (id) => {
+    if (!confirm('¿Eliminar de favoritos?')) return;
+
+    try {
+      await eliminarFavorito(id);
+      setFavorites(favorites.filter(fav => fav.id !== id));
+    } catch (err) {
+      alert('Error al eliminar favorito: ' + err.message);
+    }
   };
 
   const StarRating = ({ rating }) => {
@@ -70,6 +55,17 @@ const ClientFavorites = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ClientNavbar />
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <ClientNavbar />
@@ -84,6 +80,12 @@ const ClientFavorites = () => {
             {favorites.length} {favorites.length === 1 ? 'profesional guardado' : 'profesionales guardados'}
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+            {error}
+          </div>
+        )}
 
         {/* Grid de favoritos */}
         {favorites.length > 0 ? (
@@ -113,48 +115,53 @@ const ClientFavorites = () => {
 
                 {/* Imagen */}
                 <div className="h-48 bg-emerald-100 flex items-center justify-center relative">
-                  <img 
-                    src={favorite.image}
-                    alt={favorite.name}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white"
-                  />
+                  <div className="w-32 h-32 rounded-full bg-green-200 flex items-center justify-center text-green-700 text-3xl font-bold border-4 border-white">
+                    {favorite.nombre?.charAt(0)}{favorite.apellido?.charAt(0)}
+                  </div>
                 </div>
 
                 {/* Contenido */}
                 <div className="p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-1">
-                    {favorite.name}
+                    {favorite.nombre_completo}
                   </h3>
                   <p className="text-emerald-600 text-sm font-medium mb-2">
-                    {favorite.specialty}
+                    {favorite.especialidad}
                   </p>
                   <div className="flex items-center text-gray-500 text-sm mb-3">
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    {favorite.location}
+                    {favorite.ciudad || 'Sin especificar'}
                   </div>
+                  <p className="text-gray-600 text-sm mb-2">
+                    <strong>Experiencia:</strong> {favorite.experiencia_anos} años
+                  </p>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {favorite.description}
+                    {favorite.descripcion || 'Sin descripción'}
                   </p>
 
                   {/* Rating */}
                   <div className="flex items-center space-x-2 mb-4">
-                    <StarRating rating={favorite.rating} />
+                    <StarRating rating={favorite.calificacion_promedio || 0} />
                     <span className="text-sm text-gray-600">
-                      {favorite.rating} ({favorite.reviews} reseñas)
+                      {favorite.calificacion_promedio || 0} ({favorite.numero_resenas || 0} reseñas)
                     </span>
                   </div>
 
+                  <p className="text-green-600 text-lg font-bold mb-4">
+                    ${favorite.precio_consulta?.toLocaleString()} COP
+                  </p>
+
                   {/* Botones */}
                   <div className="flex space-x-2">
-                    <button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
-                      Reservar Cita
-                    </button>
-                    <button className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors">
+                    <Link
+                      to={`/Buscar_profesional?id=${favorite.id}`}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-center"
+                    >
                       Ver Perfil
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -172,9 +179,12 @@ const ClientFavorites = () => {
             <p className="text-gray-600 mb-4">
               Explora profesionales y guarda tus favoritos para acceder rápidamente
             </p>
-            <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+            <Link
+              to="/inicio_clientes"
+              className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            >
               Buscar Profesionales
-            </button>
+            </Link>
           </div>
         )}
       </div>

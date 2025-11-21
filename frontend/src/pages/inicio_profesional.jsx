@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProfessionalNavbar from '../components/Navbar_profesional';
 
 const BarChart = ({ data }) => {
@@ -66,77 +67,97 @@ const StarRating = ({ rating }) => {
 };
 
 const ProfessionalDashboard = () => {
-  const [periodFilter, setPeriodFilter] = useState('7days'); // 7days, 30days, year
+  const navigate = useNavigate();
+  const [periodFilter, setPeriodFilter] = useState('7days');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total_citas: 0,
+    citas_completadas: 0,
+    citas_pendientes: 0,
+    citas_confirmadas: 0,
+    ingresos_totales: 0,
+    ingresos_mes_actual: 0
+  });
+  const [proximasCitas, setProximasCitas] = useState([]);
 
-  // Mock data (reemplazar con API)
-  const stats = {
-    totalAppointments: 125,
-    totalIncome: 8450,
-    canceledAppointments: 12,
-    averageRating: 4.8,
-    appointmentsChange: 5,
-    incomeChange: 8,
-    canceledChange: -12,
-    ratingChange: -1,
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login_clientes');
+        return;
+      }
+
+      const API_URL = 'http://localhost:8000';
+
+      // Cargar estadísticas
+      const responseStats = await fetch(`${API_URL}/api/profesionales/dashboard/estadisticas`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!responseStats.ok) {
+        throw new Error('Error al cargar estadísticas');
+      }
+      
+      const statsData = await responseStats.json();
+      setStats(statsData);
+
+      // Cargar próximas citas
+      const responseCitas = await fetch(`${API_URL}/api/profesionales/dashboard/proximas-citas?limit=5`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!responseCitas.ok) {
+        throw new Error('Error al cargar citas');
+      }
+      
+      const citasData = await responseCitas.json();
+      setProximasCitas(citasData.citas);
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error cargando datos:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login_clientes');
+      }
+      setLoading(false);
+    }
   };
 
-  const financialPerformance = [
-    { label: 'Lun', value: 850 },
-    { label: 'Mar', value: 1200 },
-    { label: 'Mié', value: 950 },
-    { label: 'Jue', value: 2100 },
-    { label: 'Vie', value: 1850 },
-    { label: 'Sáb', value: 750 },
-    { label: 'Dom', value: 650 },
-  ];
+  const formatearFecha = (fechaISO) => {
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  };
 
-  const popularServices = [
-    { name: 'Corte de pelo', value: 85, color: 'cyan' },
-    { name: 'Tratamiento capilar', value: 60, color: 'yellow' },
-    { name: 'Consulta inicial', value: 45, color: 'blue' },
-    { name: 'Tratamiento facial', value: 30, color: 'red' },
-  ];
+  const obtenerEstadoColor = (estado) => {
+    const colores = {
+      'PENDIENTE': 'bg-yellow-100 text-yellow-800',
+      'CONFIRMADA': 'bg-blue-100 text-blue-800',
+      'COMPLETADA': 'bg-green-100 text-green-800',
+      'CANCELADA': 'bg-red-100 text-red-800'
+    };
+    return colores[estado] || 'bg-gray-100 text-gray-800';
+  };
 
-  const upcomingAppointments = [
-    {
-      id: 1,
-      patient: 'Ana Castillo',
-      service: 'Corte de pelo',
-      time: '10:00 AM',
-      avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-    },
-    {
-      id: 2,
-      patient: 'Bruno Morales',
-      service: 'Consulta inicial',
-      time: '11:30 AM',
-      avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-    },
-    {
-      id: 3,
-      patient: 'Carla Ríos',
-      service: 'Manicura',
-      time: '01:00 PM',
-      avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
-    },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ProfessionalNavbar />
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-gray-500">Cargando datos...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const recentReviews = [
-    {
-      id: 1,
-      patient: 'David Gómez',
-      rating: 4.5,
-      comment: '¡Excelente servicio, muy profesional y atento a los detalles. ¡Volveré!',
-      date: '2025-11-10',
-    },
-    {
-      id: 2,
-      patient: 'Elena Fernández',
-      rating: 5.0,
-      comment: 'El mejor corte que me han hecho. Ambiente muy agradable.',
-      date: '2025-11-09',
-    },
-  ];
+  const citasCanceladas = stats.total_citas - stats.citas_completadas - stats.citas_pendientes - stats.citas_confirmadas;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -184,94 +205,177 @@ const ProfessionalDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="text-sm text-gray-500 mb-1">Total de Citas</div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">{stats.totalAppointments}</div>
-            <div className={`text-sm ${stats.appointmentsChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {stats.appointmentsChange >= 0 ? '+' : ''}{stats.appointmentsChange}% vs. semana pasada
+            <div className="text-3xl font-bold text-gray-900 mb-2">{stats.total_citas}</div>
+            <div className="text-sm text-gray-600">
+              {stats.citas_completadas} completadas
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="text-sm text-gray-500 mb-1">Ingresos Totales</div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">${stats.totalIncome.toLocaleString()}</div>
-            <div className={`text-sm ${stats.incomeChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {stats.incomeChange >= 0 ? '+' : ''}{stats.incomeChange}% vs. semana pasada
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              ${stats.ingresos_totales.toLocaleString()}
+            </div>
+            <div className="text-sm text-green-600">
+              ${stats.ingresos_mes_actual.toLocaleString()} este mes
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="text-sm text-gray-500 mb-1">Citas Pendientes</div>
+            <div className="text-3xl font-bold text-gray-900 mb-2">{stats.citas_pendientes}</div>
+            <div className="text-sm text-gray-600">
+              {stats.citas_confirmadas} confirmadas
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="text-sm text-gray-500 mb-1">Citas Canceladas</div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">{stats.canceledAppointments}</div>
-            <div className={`text-sm ${stats.canceledChange <= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {stats.canceledChange >= 0 ? '+' : ''}{stats.canceledChange}% vs. semana pasada
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="text-sm text-gray-500 mb-1">Valoración Media</div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">{stats.averageRating.toFixed(1)}</div>
-            <div className={`text-sm ${stats.ratingChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {stats.ratingChange >= 0 ? '+' : ''}{stats.ratingChange}% vs. semana pasada
+            <div className="text-3xl font-bold text-gray-900 mb-2">{citasCanceladas || 0}</div>
+            <div className="text-sm text-gray-600">
+              En total
             </div>
           </div>
         </div>
 
-        {/* Charts Row */}
+        {/* Estado de citas */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Financial Performance Chart */}
+          {/* Distribución de estados */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Rendimiento Financiero</h3>
-            <BarChart data={financialPerformance} />
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución de Citas</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Completadas</span>
+                <span className="text-2xl font-bold text-green-600">{stats.citas_completadas}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Confirmadas</span>
+                <span className="text-2xl font-bold text-blue-600">{stats.citas_confirmadas}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Pendientes</span>
+                <span className="text-2xl font-bold text-yellow-600">{stats.citas_pendientes}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Canceladas</span>
+                <span className="text-2xl font-bold text-red-600">{citasCanceladas || 0}</span>
+              </div>
+            </div>
           </div>
 
-          {/* Popular Services */}
+          {/* Resumen financiero */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Servicios Más Populares</h3>
-            <div className="mt-4">
-              {popularServices.map((service, idx) => (
-                <ProgressBar key={idx} label={service.name} value={service.value} color={service.color} />
-              ))}
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumen Financiero</h3>
+            <div className="space-y-4">
+              <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg">
+                <div className="text-sm text-gray-600 mb-1">Ingresos Totales</div>
+                <div className="text-3xl font-bold text-emerald-700">
+                  ${stats.ingresos_totales.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-4 bg-gradient-to-r from-cyan-50 to-cyan-100 rounded-lg">
+                <div className="text-sm text-gray-600 mb-1">Ingresos Este Mes</div>
+                <div className="text-3xl font-bold text-cyan-700">
+                  ${stats.ingresos_mes_actual.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm text-gray-600 mb-1">Promedio por Cita</div>
+                <div className="text-2xl font-bold text-gray-700">
+                  ${stats.citas_completadas > 0 
+                    ? Math.round(stats.ingresos_totales / stats.citas_completadas).toLocaleString() 
+                    : 0}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming Appointments */}
+        <div className="grid grid-cols-1 gap-6">
+          {/* Próximas Citas */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Próximas Citas</h3>
-            <div className="space-y-4">
-              {upcomingAppointments.map((apt) => (
-                <div key={apt.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <img src={apt.avatar} alt={apt.patient} className="w-10 h-10 rounded-full" />
-                    <div>
-                      <div className="font-medium text-gray-900">{apt.patient}</div>
-                      <div className="text-sm text-gray-500">{apt.service}</div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Próximas Citas</h3>
+              <button 
+                onClick={() => navigate('/panelcitas_profesional')}
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+              >
+                Ver todas →
+              </button>
+            </div>
+
+            {proximasCitas.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No tienes citas próximas
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {proximasCitas.map((cita) => (
+                  <div key={cita.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg border">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <span className="text-emerald-700 font-bold text-sm">
+                            {cita.cliente.nombre_completo.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{cita.cliente.nombre_completo}</div>
+                          <div className="text-sm text-gray-500">{cita.cliente.email}</div>
+                        </div>
+                      </div>
+                      <div className="ml-13 space-y-1">
+                        <div className="text-sm text-gray-700">
+                          <span className="font-medium">Motivo:</span> {cita.motivo || 'Consulta general'}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Duración: {cita.duracion_minutos} minutos
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right ml-4">
+                      <div className="text-sm font-medium text-gray-900 mb-2">
+                        {formatearFecha(cita.fecha_hora)}
+                      </div>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${obtenerEstadoColor(cita.estado)}`}>
+                        {cita.estado}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-sm font-medium text-gray-900">{apt.time}</div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Recent Reviews */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Últimas Valoraciones</h3>
-            <div className="space-y-4">
-              {recentReviews.map((review) => (
-                <div key={review.id} className="border-b pb-4 last:border-b-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium text-gray-900">{review.patient}</div>
-                    <StarRating rating={review.rating} />
-                  </div>
-                  <p className="text-sm text-gray-600 italic">"{review.comment}"</p>
-                  <div className="text-xs text-gray-400 mt-2">
-                    {new Date(review.date).toLocaleDateString('es-ES')}
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Acciones rápidas */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button 
+              onClick={() => navigate('/agenda_profesional')}
+              className="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center"
+            >
+              <div className="text-3xl mb-2">📅</div>
+              <div className="font-semibold text-gray-900 mb-1">Mi Agenda</div>
+              <div className="text-sm text-gray-500">Gestiona tu calendario</div>
+            </button>
+
+            <button 
+              onClick={() => navigate('/panelcitas_profesional')}
+              className="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center"
+            >
+              <div className="text-3xl mb-2">📋</div>
+              <div className="font-semibold text-gray-900 mb-1">Mis Citas</div>
+              <div className="text-sm text-gray-500">Ver todas las citas</div>
+            </button>
+
+            <button 
+              onClick={() => navigate('/perfil_profesional')}
+              className="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center"
+            >
+              <div className="text-3xl mb-2">⚙️</div>
+              <div className="font-semibold text-gray-900 mb-1">Mi Perfil</div>
+              <div className="text-sm text-gray-500">Editar información</div>
+            </button>
           </div>
         </div>
       </div>

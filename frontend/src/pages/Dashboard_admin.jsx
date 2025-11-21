@@ -1,31 +1,122 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/Slider_admin.jsx';
 
+const API_URL = 'http://localhost:8000';
+
 const AdminDashboard = () => {
-  const stats = {
-    totalProfessionals: 24,
-    totalPatients: 156,
-    totalAppointments: 892,
-    activeAppointments: 34,
-    professionalChange: 12,
-    patientChange: 8,
-    appointmentChange: 15,
+  const [stats, setStats] = useState({
+    totalProfessionals: 0,
+    totalPatients: 0,
+    totalAppointments: 0,
+    activeAppointments: 0,
+    professionalChange: 0,
+    patientChange: 0,
+    appointmentChange: 0,
+  });
+  
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Cargar usuarios
+      const usersResponse = await fetch(`${API_URL}/api/auth/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const users = await usersResponse.json();
+      
+      const profesionales = users.filter(u => u.tipo_usuario === 'profesional');
+      const pacientes = users.filter(u => u.tipo_usuario === 'cliente');
+      
+      // Cargar citas
+      let citas = [];
+      let citasActivas = 0;
+      try {
+        const citasResponse = await fetch(`${API_URL}/api/citas/admin/todas`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (citasResponse.ok) {
+          const citasData = await citasResponse.json();
+          citas = citasData.citas || [];
+          
+          // Contar citas activas (pendientes o confirmadas)
+          citasActivas = citas.filter(c => 
+            c.estado === 'pendiente' || c.estado === 'confirmada'
+          ).length;
+          
+          // Obtener próximas citas (ordenadas por fecha)
+          const proximasCitas = citas
+            .filter(c => c.estado === 'pendiente' || c.estado === 'confirmada')
+            .filter(c => new Date(c.fecha_hora) > new Date())
+            .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora))
+            .slice(0, 5)
+            .map(cita => ({
+              id: cita.id,
+              patient: cita.cliente?.nombre_completo || 'Sin nombre',
+              professional: cita.profesional?.nombre_completo || 'Sin nombre',
+              date: cita.fecha_hora,
+              time: new Date(cita.fecha_hora).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+              status: cita.estado === 'confirmada' ? 'confirmed' : 'pending'
+            }));
+          
+          setUpcomingAppointments(proximasCitas);
+        }
+      } catch (citasError) {
+        console.error('Error cargando citas:', citasError);
+      }
+      
+      setStats({
+        totalProfessionals: profesionales.length,
+        totalPatients: pacientes.length,
+        totalAppointments: citas.length,
+        activeAppointments: citasActivas,
+        professionalChange: 0,
+        patientChange: 0,
+        appointmentChange: 0,
+      });
+      
+      // Actividad reciente basada en usuarios nuevos
+      const actividadReciente = users
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5)
+        .map((user) => ({
+          id: user.id,
+          type: user.tipo_usuario === 'profesional' ? 'professional' : 'patient',
+          action: user.tipo_usuario === 'profesional' ? 'Nuevo profesional registrado' : 'Nuevo paciente registrado',
+          user: `${user.nombre || ''} ${user.apellido || ''}`.trim() || user.email,
+          time: formatearTiempo(user.created_at)
+        }));
+      
+      setRecentActivity(actividadReciente);
+      
+    } catch (error) {
+      console.error('Error cargando datos:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const recentActivity = [
-    { id: 1, type: 'professional', action: 'Nuevo profesional registrado', user: 'Dr. Carlos Méndez', time: 'Hace 2 horas' },
-    { id: 2, type: 'patient', action: 'Nuevo paciente registrado', user: 'Ana García López', time: 'Hace 3 horas' },
-    { id: 3, type: 'appointment', action: 'Cita programada', user: 'María Torres con Dr. Pérez', time: 'Hace 5 horas' },
-    { id: 4, type: 'appointment', action: 'Cita cancelada', user: 'Juan Sánchez con Dra. Ruiz', time: 'Hace 1 día' },
-    { id: 5, type: 'professional', action: 'Profesional actualizado', user: 'Dra. Laura Martínez', time: 'Hace 1 día' },
-  ];
-
-  const upcomingAppointments = [
-    { id: 1, patient: 'Ana García', professional: 'Dr. Carlos Méndez', date: '2025-11-13', time: '10:00', status: 'confirmed' },
-    { id: 2, patient: 'Pedro Sánchez', professional: 'Dra. Laura Martínez', date: '2025-11-13', time: '11:30', status: 'pending' },
-    { id: 3, patient: 'María Torres', professional: 'Dr. Juan Pérez', date: '2025-11-13', time: '14:00', status: 'confirmed' },
-    { id: 4, patient: 'Luis Fernández', professional: 'Dra. Andrea Ruiz', date: '2025-11-14', time: '09:00', status: 'confirmed' },
-  ];
+  const formatearTiempo = (fecha) => {
+    const ahora = new Date();
+    const entonces = new Date(fecha);
+    const diff = ahora - entonces;
+    
+    const minutos = Math.floor(diff / 60000);
+    const horas = Math.floor(diff / 3600000);
+    const dias = Math.floor(diff / 86400000);
+    
+    if (minutos < 60) return `Hace ${minutos} minutos`;
+    if (horas < 24) return `Hace ${horas} horas`;
+    return `Hace ${dias} días`;
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -42,6 +133,12 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <div className="p-8">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+            </div>
+          ) : (
+            <>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-emerald-500">
@@ -123,26 +220,32 @@ const AdminDashboard = () => {
             {/* Upcoming Appointments */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Próximas Citas</h3>
-              <div className="space-y-3">
-                {upcomingAppointments.map((apt) => (
-                  <div key={apt.id} className="p-3 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-900">{apt.patient}</span>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        apt.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {apt.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
-                      </span>
+              {upcomingAppointments.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No hay citas próximas registradas</p>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingAppointments.map((apt) => (
+                    <div key={apt.id} className="p-3 border rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-900">{apt.patient}</span>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          apt.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {apt.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">con {apt.professional}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(apt.date).toLocaleDateString('es-ES')} a las {apt.time}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600">con {apt.professional}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(apt.date).toLocaleDateString('es-ES')} a las {apt.time}
-                    </p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

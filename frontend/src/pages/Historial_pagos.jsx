@@ -1,48 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ClientNavbar from '../components/Navbar_cliente';
+import { getMisPagos, getEstadisticasPagos, getToken } from '../api';
 
 const PaymentHistory = () => {
+  const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState('all'); // all, completed, pending, failed
+  const [pagos, setPagos] = useState([]);
+  const [estadisticas, setEstadisticas] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Datos de ejemplo de pagos (normalmente vendrían de tu backend)
-  const payments = [
-    {
-      id: 1,
-      transactionId: "TXN-2024-001234",
-      service: "Consulta General",
-      professional: "Dra. Ana Torres",
-      date: "2024-10-15",
-      time: "10:00 AM",
-      amount: 88.00,
-      status: "completed",
-      paymentMethod: "Tarjeta **** 4532",
-      invoice: "INV-2024-001234"
-    },
-    {
-      id: 42,
-      transactionId: "TXN-2024-001237",
-      service: "Consulta General",
-      professional: "Javier Romero",
-      date: "2024-11-01",
-      time: "09:00 AM",
-      amount: 88.00,
-      status: "pending",
-      paymentMethod: "Tarjeta **** 4532",
-      invoice: null
-    },
-    {
-      id: 3,
-      transactionId: "TXN-2024-001238",
-      service: "Examen Completo",
-      professional: "Luis Fernández",
-      date: "2024-09-28",
-      time: "14:00 PM",
-      amount: 132.00,
-      status: "failed",
-      paymentMethod: "Tarjeta **** 4532",
-      invoice: null
+  useEffect(() => {
+    // Verificar autenticación
+    const token = getToken();
+    if (!token) {
+      alert('Debes iniciar sesión para ver tu historial de pagos');
+      navigate('/login_clientes');
+      return;
     }
-  ];
+    cargarDatos();
+  }, [navigate]);
+
+  const cargarDatos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [pagosData, estadisticasData] = await Promise.all([
+        getMisPagos(),
+        getEstadisticasPagos()
+      ]);
+      setPagos(pagosData);
+      setEstadisticas(estadisticasData);
+    } catch (err) {
+      console.error('Error al cargar datos:', err);
+      setError(err.message || 'Error al cargar los datos');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusBadge = (status) => {
     const badges = {
@@ -62,23 +58,75 @@ const PaymentHistory = () => {
     );
   };
 
+  const mapEstadoBackendToFilter = (estado) => {
+    const estadosMap = {
+      'COMPLETADO': 'completed',
+      'completado': 'completed',
+      'PENDIENTE': 'pending',
+      'pendiente': 'pending',
+      'FALLIDO': 'failed',
+      'fallido': 'failed',
+      'REEMBOLSADO': 'refunded',
+      'reembolsado': 'refunded'
+    };
+    return estadosMap[estado] || estado;
+  };
+
   const filteredPayments = filterStatus === 'all' 
-    ? payments 
-    : payments.filter(payment => payment.status === filterStatus);
+    ? pagos 
+    : pagos.filter(pago => mapEstadoBackendToFilter(pago.estado) === filterStatus);
 
-  const totalPaid = payments
-    .filter(p => p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount, 0);
-
-  const handleDownloadInvoice = (payment) => {
-    alert(`Descargando factura ${payment.invoice}`);
+  const handleDownloadInvoice = (pago) => {
+    alert(`Descargando factura ${pago.referencia_transaccion}`);
     // Aquí iría la lógica para descargar la factura
   };
 
-  const handleRetryPayment = (payment) => {
-    alert(`Reintentando pago para ${payment.service}`);
+  const handleRetryPayment = (pago) => {
+    alert(`Reintentando pago ID: ${pago.id}`);
     // Aquí iría la lógica para reintentar el pago
   };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-CO', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit' 
+    });
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('es-CO', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ClientNavbar />
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <ClientNavbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -98,7 +146,7 @@ const PaymentHistory = () => {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Pagado</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${totalPaid.toFixed(2)}
+                    ${estadisticas ? estadisticas.total_gastado.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -114,7 +162,7 @@ const PaymentHistory = () => {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Completados</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {payments.filter(p => p.status === 'completed').length}
+                    {estadisticas ? estadisticas.pagos_completados : 0}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -130,7 +178,7 @@ const PaymentHistory = () => {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Pendientes</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {payments.filter(p => p.status === 'pending').length}
+                    {estadisticas ? estadisticas.pagos_pendientes : 0}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -146,7 +194,7 @@ const PaymentHistory = () => {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Fallidos</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {payments.filter(p => p.status === 'failed').length}
+                    {pagos.filter(p => p.estado === 'fallido').length}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -171,7 +219,7 @@ const PaymentHistory = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  Todos ({payments.length})
+                  Todos ({pagos.length})
                 </button>
                 <button
                   onClick={() => setFilterStatus('completed')}
@@ -181,7 +229,7 @@ const PaymentHistory = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  Completados ({payments.filter(p => p.status === 'completed').length})
+                  Completados ({pagos.filter(p => p.estado === 'COMPLETADO' || p.estado === 'completado').length})
                 </button>
                 <button
                   onClick={() => setFilterStatus('pending')}
@@ -191,7 +239,7 @@ const PaymentHistory = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  Pendientes ({payments.filter(p => p.status === 'pending').length})
+                  Pendientes ({pagos.filter(p => p.estado === 'PENDIENTE' || p.estado === 'pendiente').length})
                 </button>
                 <button
                   onClick={() => setFilterStatus('failed')}
@@ -201,7 +249,7 @@ const PaymentHistory = () => {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  Fallidos ({payments.filter(p => p.status === 'failed').length})
+                  Fallidos ({pagos.filter(p => p.estado === 'FALLIDO' || p.estado === 'fallido').length})
                 </button>
               </div>
             </div>
@@ -241,31 +289,36 @@ const PaymentHistory = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredPayments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-gray-50">
+                {filteredPayments.map((pago) => (
+                  <tr key={pago.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {payment.transactionId}
+                        {pago.referencia_transaccion}
                       </div>
-                      {payment.invoice && (
-                        <div className="text-xs text-gray-500">
-                          {payment.invoice}
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500">
+                        ID: {pago.id}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{payment.service}</div>
-                      <div className="text-xs text-gray-500">{payment.time}</div>
+                      <div className="text-sm text-gray-900">{pago.cita?.motivo || 'Consulta'}</div>
+                      <div className="text-xs text-gray-500">
+                        {pago.cita?.fecha_hora ? formatTime(pago.cita.fecha_hora) : '-'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{payment.professional}</div>
+                      <div className="text-sm text-gray-900">
+                        {pago.profesional?.nombre_completo || 'N/A'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{payment.date}</div>
+                      <div className="text-sm text-gray-900">
+                        {pago.fecha_pago ? formatDate(pago.fecha_pago) : 
+                         (pago.cita?.fecha_hora ? formatDate(pago.cita.fecha_hora) : '-')}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-semibold text-gray-900">
-                        ${payment.amount.toFixed(2)}
+                        ${pago.monto.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -273,17 +326,17 @@ const PaymentHistory = () => {
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
-                        {payment.paymentMethod}
+                        {pago.metodo_pago || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(payment.status)}
+                      {getStatusBadge(mapEstadoBackendToFilter(pago.estado))}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-2">
-                        {payment.status === 'completed' && payment.invoice && (
+                        {(pago.estado === 'COMPLETADO' || pago.estado === 'completado') && (
                           <button
-                            onClick={() => handleDownloadInvoice(payment)}
+                            onClick={() => handleDownloadInvoice(pago)}
                             className="text-cyan-600 hover:text-cyan-900 font-medium"
                             title="Descargar factura"
                           >
@@ -292,9 +345,9 @@ const PaymentHistory = () => {
                             </svg>
                           </button>
                         )}
-                        {payment.status === 'failed' && (
+                        {(pago.estado === 'FALLIDO' || pago.estado === 'fallido') && (
                           <button
-                            onClick={() => handleRetryPayment(payment)}
+                            onClick={() => handleRetryPayment(pago)}
                             className="text-red-600 hover:text-red-900 font-medium"
                             title="Reintentar pago"
                           >
@@ -303,7 +356,7 @@ const PaymentHistory = () => {
                             </svg>
                           </button>
                         )}
-                        {payment.status === 'pending' && (
+                        {(pago.estado === 'PENDIENTE' || pago.estado === 'pendiente') && (
                           <span className="text-gray-400 text-xs">Procesando...</span>
                         )}
                       </div>

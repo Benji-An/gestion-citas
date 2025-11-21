@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ProfessionalNavbar from '../components/Navbar_profesional.jsx';
+import { getPatients, addPatient } from '../api';
 
 /* ---------- Modal de Paciente (in-file) ---------- */
 const PatientModal = ({ open, patient, onClose, onSave }) => {
@@ -59,93 +60,75 @@ const PatientModal = ({ open, patient, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <h3 className="text-xl font-semibold mb-4">{formData.id ? 'Editar Paciente' : 'Nuevo Paciente'}</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
+        <h3 className="text-xl font-semibold mb-4">Información del Paciente</h3>
+        <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Información básica */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-3">Información de Contacto</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-500">Nombre</div>
+                  <div className="font-medium text-gray-900">{formData.name}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Email</div>
+                  <div className="font-medium text-gray-900">{formData.email}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Teléfono</div>
+                  <div className="font-medium text-gray-900">{formData.phone || 'No especificado'}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Estado</div>
+                  <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                    formData.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {formData.status === 'active' ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-              <input
-                type="email"
-                className="w-full px-3 py-2 border rounded"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </div>
+            {/* Información de citas */}
+            {patient && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-3">Historial de Citas</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm text-gray-500">Total de citas</div>
+                    <div className="text-2xl font-bold text-blue-600">{patient.total_citas || 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Última cita</div>
+                    <div className="font-medium text-gray-900">
+                      {patient.ultima_cita 
+                        ? new Date(patient.ultima_cita).toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric'
+                          })
+                        : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-              <input
-                type="tel"
-                className="w-full px-3 py-2 border rounded"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de nacimiento</label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 border rounded"
-                value={formData.birthDate}
-                onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notas / Observaciones</label>
-              <textarea
-                className="w-full px-3 py-2 border rounded"
-                rows="3"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-              <select
-                className="w-full px-3 py-2 border rounded"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              >
-                <option value="active">Activo</option>
-                <option value="inactive">Inactivo</option>
-              </select>
+            {/* Nota informativa */}
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Nota:</strong> Los datos de los pacientes solo pueden ser modificados por ellos mismos desde su perfil.
+              </p>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">
-              Cancelar
-            </button>
-            <button type="submit" className="px-4 py-2 rounded bg-cyan-600 text-white hover:bg-cyan-700">
-              Guardar
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700">
+              Cerrar
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -153,61 +136,23 @@ const PatientModal = ({ open, patient, onClose, onSave }) => {
 
 /* ---------- Componente principal ---------- */
 const ProfessionalPatients = () => {
-  // Mock data (reemplazar con fetch/API)
-  const [patients, setPatients] = useState([
-    {
-      id: 'p1',
-      name: 'Ana García López',
-      email: 'ana.garcia@example.com',
-      phone: '+34 600 123 456',
-      birthDate: '1985-03-15',
-      address: 'Calle Mayor 10, Madrid',
-      notes: 'Alergia a penicilina',
-      status: 'active',
-      lastVisit: '2025-10-20',
-      totalVisits: 12,
-      avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-    },
-    {
-      id: 'p2',
-      name: 'Carlos Méndez Ruiz',
-      email: 'carlos.mendez@example.com',
-      phone: '+34 610 234 567',
-      birthDate: '1990-07-22',
-      address: 'Avenida Libertad 45, Barcelona',
-      notes: '',
-      status: 'active',
-      lastVisit: '2025-11-01',
-      totalVisits: 8,
-      avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-    },
-    {
-      id: 'p3',
-      name: 'María Torres Sánchez',
-      email: 'maria.torres@example.com',
-      phone: '+34 620 345 678',
-      birthDate: '1978-12-05',
-      address: 'Plaza España 3, Valencia',
-      notes: 'Diabetes tipo 2',
-      status: 'active',
-      lastVisit: '2025-09-15',
-      totalVisits: 25,
-      avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
-    },
-    {
-      id: 'p4',
-      name: 'Juan Pérez Fernández',
-      email: 'juan.perez@example.com',
-      phone: '+34 630 456 789',
-      birthDate: '1995-05-10',
-      address: 'Calle Sol 22, Sevilla',
-      notes: '',
-      status: 'inactive',
-      lastVisit: '2025-08-10',
-      totalVisits: 5,
-      avatar: 'https://randomuser.me/api/portraits/men/4.jpg',
-    },
-  ]);
+  const [patients, setPatients] = useState([]);
+  const [loadingPatients, setLoadingPatients] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await getPatients();
+        if (mounted) setPatients(data);
+      } catch (err) {
+        console.error('Error fetching patients:', err);
+      } finally {
+        if (mounted) setLoadingPatients(false);
+      }
+    })();
+    return () => (mounted = false);
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all, active, inactive
@@ -237,18 +182,12 @@ const ProfessionalPatients = () => {
   };
 
   const savePatient = (data) => {
-    setPatients((prev) => {
-      const exists = prev.find((p) => p.id === data.id);
-      if (exists) {
-        return prev.map((p) => (p.id === data.id ? { ...p, ...data } : p));
-      }
-      return [...prev, { ...data, totalVisits: 0, lastVisit: null, avatar: 'https://randomuser.me/api/portraits/lego/1.jpg' }];
-    });
+    alert('Los pacientes se registran por sí mismos. Esta funcionalidad no está disponible.');
+    setIsModalOpen(false);
   };
 
   const deletePatient = (id) => {
-    if (!confirm('¿Eliminar este paciente?')) return;
-    setPatients((prev) => prev.filter((p) => p.id !== id));
+    alert('No se pueden eliminar pacientes. Solo puedes ver su información.');
   };
 
   return (
@@ -259,13 +198,13 @@ const ProfessionalPatients = () => {
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Pacientes</h1>
-            <p className="text-sm text-gray-600 mt-1">Administra la información de tus pacientes y consulta su historial.</p>
+            <h1 className="text-2xl font-bold text-gray-900">Mis Pacientes</h1>
+            <p className="text-sm text-gray-600 mt-1">Consulta la información de los pacientes que han tenido citas contigo.</p>
           </div>
 
-          <button onClick={openAddPatient} className="px-4 py-2 bg-cyan-600 text-white rounded shadow hover:bg-cyan-700">
-            + Nuevo Paciente
-          </button>
+          <div className="text-sm text-gray-500">
+            Total: {filteredPatients.length} paciente{filteredPatients.length !== 1 ? 's' : ''}
+          </div>
         </div>
 
         {/* Filters and search */}
@@ -304,12 +243,14 @@ const ProfessionalPatients = () => {
           {filteredPatients.map((patient) => (
             <div key={patient.id} className="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition">
               <div className="flex items-start gap-4">
-                <img src={patient.avatar} alt={patient.name} className="w-16 h-16 rounded-full object-cover" />
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white text-2xl font-bold">
+                  {patient.name.charAt(0).toUpperCase()}
+                </div>
 
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{patient.name}</h3>
                   <p className="text-sm text-gray-500">{patient.email}</p>
-                  <p className="text-sm text-gray-500">{patient.phone}</p>
+                  <p className="text-sm text-gray-500">{patient.phone || 'Sin teléfono'}</p>
                 </div>
 
                 <span
@@ -323,35 +264,23 @@ const ProfessionalPatients = () => {
 
               <div className="mt-4 pt-4 border-t grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <div className="text-gray-500">Última visita</div>
+                  <div className="text-gray-500">Última cita</div>
                   <div className="font-medium">
-                    {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString('es-ES') : 'N/A'}
+                    {patient.ultima_cita ? new Date(patient.ultima_cita).toLocaleDateString('es-ES') : 'N/A'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-500">Total visitas</div>
-                  <div className="font-medium">{patient.totalVisits}</div>
+                  <div className="text-gray-500">Total citas</div>
+                  <div className="font-medium">{patient.total_citas || 0}</div>
                 </div>
               </div>
-
-              {patient.notes && (
-                <div className="mt-3 text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                  <span className="font-medium">Notas:</span> {patient.notes}
-                </div>
-              )}
 
               <div className="mt-4 flex items-center gap-2">
                 <button
                   onClick={() => openEditPatient(patient)}
-                  className="flex-1 px-3 py-2 bg-cyan-50 text-cyan-700 rounded hover:bg-cyan-100 text-sm"
+                  className="flex-1 px-3 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm"
                 >
-                  Ver / Editar
-                </button>
-                <button
-                  onClick={() => deletePatient(patient.id)}
-                  className="px-3 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm"
-                >
-                  Eliminar
+                  Ver Historial
                 </button>
               </div>
             </div>
