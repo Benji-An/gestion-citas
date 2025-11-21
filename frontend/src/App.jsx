@@ -4,6 +4,7 @@ import Benefits from './components/Benefits';
 import Testimonials from './components/Opinions';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
+// Vercel deployment - 2025-11-21
 // Rutas del cliente
 import Login from './pages/login_clientes';
 import Register from './pages/registro_clientes';
