@@ -13,12 +13,9 @@ ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Contexto para hashear contraseñas
-# truncate_error=False permite que bcrypt trunque automáticamente contraseñas largas
 pwd_context = CryptContext(
     schemes=["bcrypt"], 
-    deprecated="auto",
-    bcrypt__rounds=12,
-    bcrypt__truncate_error=False
+    deprecated="auto"
 )
 
 # OAuth2 scheme
@@ -27,6 +24,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica si la contraseña plana coincide con el hash"""
+    # Truncar contraseña a 72 bytes para bcrypt
+    if len(plain_password.encode('utf-8')) > 72:
+        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
     return pwd_context.verify(plain_password, hashed_password)
 
 
