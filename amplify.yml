@@ -10,8 +10,10 @@ frontend:
     build:
       commands:
         - npm run build
+        - echo "/*    /index.html   200" > dist/_redirects
         - echo "Build completed, checking dist contents:"
         - ls -la dist/
+        - cat dist/_redirects
   artifacts:
     baseDirectory: frontend/dist
     files:
