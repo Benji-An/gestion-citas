@@ -19,8 +19,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         FRONTEND_URL,  # URL del frontend en producción (de variable de entorno)
-        "mipropiedad.xyz",  # Reemplazar con tu dominio real
-        "mipropiedad.xyz",
+        "https://mipropiedad.xyz",  # Dominio principal
+        "https://www.mipropiedad.xyz",  # Con www
+        "http://mipropiedad.xyz",  # HTTP (redirige a HTTPS)
+        "http://www.mipropiedad.xyz",
         "http://localhost:5173",  # Vite default (desarrollo)
         "http://localhost:5174",  # Vite alternativo
         "http://localhost:3000",  # React default
