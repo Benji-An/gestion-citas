@@ -280,13 +280,20 @@ def crear_pago_con_paypal(
             detail="Esta cita ya tiene un pago completado"
         )
     
+    # Verificar que la cita tenga precio
+    if not cita.precio or cita.precio <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La cita no tiene un precio válido"
+        )
+    
     # ==================== MODO SIMULACIÓN ====================
     # Simular creación de pago en PayPal sin hacer llamadas reales
     import uuid
     from datetime import datetime
     
     payment_id = f"PAYID-SIMULATED-{uuid.uuid4().hex[:20].upper()}"
-    monto_usd = round(cita.precio / 4000, 2)  # Conversión COP a USD simulada
+    monto_usd = round(float(cita.precio) / 4000, 2)  # Conversión COP a USD simulada
     
     profesional = db.query(User).filter(User.id == cita.profesional_id).first()
     
