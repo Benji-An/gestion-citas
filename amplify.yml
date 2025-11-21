@@ -4,16 +4,17 @@ frontend:
     preBuild:
       commands:
         - cd frontend
-        - echo "VITE_API_URL=https://gestion-citas-production.up.railway.app" > .env.production
-        - cat .env.production
+        - export VITE_API_URL=https://gestion-citas-production.up.railway.app
+        - echo "VITE_API_URL=$VITE_API_URL"
         - npm ci
     build:
       commands:
+        - export VITE_API_URL=https://gestion-citas-production.up.railway.app
+        - echo "Building with VITE_API_URL=$VITE_API_URL"
         - npm run build
         - echo "/*    /index.html   200" > dist/_redirects
-        - echo "Build completed, checking dist contents:"
-        - ls -la dist/
-        - cat dist/_redirects
+        - echo "Checking if Railway URL is in the JS file:"
+        - grep -o "gestion-citas-production" dist/assets/*.js || echo "NOT FOUND!"
   artifacts:
     baseDirectory: frontend/dist
     files:
