@@ -7,7 +7,14 @@ from database import get_db
 from models import User, PerfilProfesional, TipoUsuario, Favorito, Cita, EstadoCita, Disponibilidad, DiaSemana
 from security import get_current_active_user
 from schemas import TokenData
-from services import profesional_service
+from services.profesional_service import (
+    obtener_estadisticas_profesional,
+    obtener_proximas_citas,
+    obtener_disponibilidad_profesional,
+    crear_disponibilidad,
+    actualizar_disponibilidad,
+    eliminar_disponibilidad
+)
 
 router = APIRouter(prefix="/api/profesionales", tags=["Profesionales"])
 
