@@ -268,17 +268,21 @@ def crear_pago_con_paypal(
             detail="Cita no encontrada"
         )
     
-    # Verificar que no exista un pago completado
+    # Verificar que no exista un pago (completado o pendiente)
     pago_existente = db.query(Pago).filter(
-        Pago.cita_id == request.cita_id,
-        Pago.estado == EstadoPago.COMPLETADO
+        Pago.cita_id == request.cita_id
     ).first()
     
     if pago_existente:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Esta cita ya tiene un pago completado"
-        )
+        if pago_existente.estado == EstadoPago.COMPLETADO:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Esta cita ya tiene un pago completado"
+            )
+        else:
+            # Si hay un pago pendiente, eliminarlo para crear uno nuevo
+            db.delete(pago_existente)
+            db.commit()
     
     # Verificar que la cita tenga precio
     if not cita.precio or cita.precio <= 0:
