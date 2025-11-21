@@ -208,7 +208,7 @@ def obtener_disponibilidad_profesional(db: Session, profesional_id: int) -> List
     """
     # Primero obtener el perfil profesional
     perfil = db.query(PerfilProfesional).filter(
-        PerfilProfesional.usuario_id == profesional_id
+        PerfilProfesional.user_id == profesional_id
     ).first()
     
     if not perfil:
@@ -238,7 +238,7 @@ def crear_disponibilidad(
     """
     # Obtener perfil profesional
     perfil = db.query(PerfilProfesional).filter(
-        PerfilProfesional.usuario_id == profesional_id
+        PerfilProfesional.user_id == profesional_id
     ).first()
     
     if not perfil:
@@ -270,7 +270,7 @@ def actualizar_disponibilidad(
     """
     # Obtener perfil profesional
     perfil = db.query(PerfilProfesional).filter(
-        PerfilProfesional.usuario_id == profesional_id
+        PerfilProfesional.user_id == profesional_id
     ).first()
     
     if not perfil:
@@ -305,7 +305,7 @@ def eliminar_disponibilidad(
     """
     # Obtener perfil profesional
     perfil = db.query(PerfilProfesional).filter(
-        PerfilProfesional.usuario_id == profesional_id
+        PerfilProfesional.user_id == profesional_id
     ).first()
     
     if not perfil:
